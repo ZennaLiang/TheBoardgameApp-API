@@ -32,7 +32,7 @@ exports.findAllUsers = (req, res) => {
                 error: err
             });
         }
-        res.json({ users });
+        res.json( users );
     }).select("name email updated createdDate");
 };
 
