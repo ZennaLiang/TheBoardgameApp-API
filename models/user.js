@@ -22,7 +22,11 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    updated: Date
+    updated: Date,
+    photo: {
+        data: Buffer,
+        contentType: String
+    }
 });
 
 /**************************************************************************
@@ -37,7 +41,7 @@ const userSchema = new mongoose.Schema({
 // virtual field for temp password
 userSchema
     .virtual("password")
-    .set(function(password) {
+    .set(function (password) {
         // create temporary variable called _password
         this._password = password;
         // generate a timestamp
@@ -45,7 +49,7 @@ userSchema
         // encrypt password
         this.hashed_password = this.encryptPassword(password);
     })
-    .get(function() {
+    .get(function () {
         return this._password;
     });
 
@@ -56,11 +60,11 @@ userSchema
 **************************************************************************/
 
 userSchema.methods = {
-    authenticate: function(plainText) {
+    authenticate: function (plainText) {
         return this.encryptPassword(plainText) === this.hashed_password;
     },
     // encrypt the password and check if password match
-    encryptPassword: function(password) {
+    encryptPassword: function (password) {
         if (!password) return "";
         try {
             return crypto
