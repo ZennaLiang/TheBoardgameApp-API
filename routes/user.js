@@ -7,17 +7,25 @@ const {
     getUser, 
     updateUser, 
     deleteUser,
-    getUserPhoto
+    getUserPhoto,
+    addFollowing,
+    addFollower,
+    removeFollowing,
+    removeFollower
 } = require("../controllers/user");
 
 
 const router = express.Router();
+router.put("/user/follow", requireSignIn, addFollowing, addFollower);
+router.put("/user/unfollow", requireSignIn, removeFollowing, removeFollower);
 
 router.get("/users", findAllUsers);
 router.get("/user/:userId", requireSignIn, getUser);
 router.put("/user/:userId", requireSignIn, updateUser);
 router.delete("/user/:userId", requireSignIn, deleteUser);
 router.get("/user/photo/:userId", getUserPhoto);
+
+
 
 // any route containing :userId, our app will first execute userByID()
 router.param("userId", findUserById);

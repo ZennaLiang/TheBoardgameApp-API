@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const uuidv1 = require("uuid/v1");//for random string and time stamp
 const crypto = require("crypto"); //for hash password
+const { ObjectId } = mongoose.Schema; // object with name and ids
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -30,7 +31,9 @@ const userSchema = new mongoose.Schema({
     about: {
         type: String,
         trim: true
-    }
+    },
+    following: [{ type: ObjectId, ref: "User" }],
+    followers: [{ type: ObjectId, ref: "User" }]
 });
 
 /**************************************************************************
