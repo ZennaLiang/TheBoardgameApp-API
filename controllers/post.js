@@ -17,6 +17,9 @@ exports.findPostById = (req, res, next, id) => {
             next();
         });
 };
+exports.getPost = (req, res) => {
+    return res.json(req.post);
+};
 
 exports.getPosts = (req, res) => {
     const posts = Post.find()

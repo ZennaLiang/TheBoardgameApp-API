@@ -1,12 +1,14 @@
 const express = require("express");
 
-const { getPosts, createPost, postsByUser, findPostById, isPoster, deletePost, updatePost, getPostPhoto } = require("../controllers/post");
+const { getPosts, createPost, postsByUser, findPostById, isPoster, deletePost, updatePost, getPostPhoto, getPost } = require("../controllers/post");
 const { requireSignIn} = require("../controllers/auth");
 const { createPostValidator } = require("../validator");
 const { findUserById } = require("../controllers/user");
 
 const router = express.Router();
 
+
+router.get("/post/:postId", getPost);
 router.get("/posts", getPosts);
 router.post("/post/new/:userId", requireSignIn, createPost, createPostValidator);
 router.get("/posts/by/:userId", requireSignIn, postsByUser);
