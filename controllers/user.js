@@ -122,7 +122,7 @@ exports.addFollowing = (req, res, next) => {
 exports.addFollower = (req, res) => {
     User.findByIdAndUpdate(
         req.body.followId,
-        { $push: { followers: req.body.userId } },
+        { $push: { followers: req.body.userId } }, // add new data to user
         { new: true } // to get updated data - w/o it will return old data
     )
         .populate("following", "_id name")

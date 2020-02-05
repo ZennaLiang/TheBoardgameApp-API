@@ -24,7 +24,7 @@ exports.getPost = (req, res) => {
 exports.getPosts = (req, res) => {
     const posts = Post.find()
         .populate("postedBy", "_id name") // get postedBy user info
-        .select("_id title body createdDate")
+        .select("_id title body createdDate likes")
         .sort({createdDate: -1})
         .then(posts => {
             // res.json({ posts }); // doesnt work w/ .map() on front end
@@ -37,6 +37,7 @@ exports.getPosts = (req, res) => {
 exports.postsByUser = (req, res) => {
     Post.find({ postedBy: req.profile._id })
         .populate("postedBy", "_id name") 
+        .select("_id title body createdDate likes")
         .sort("_created")
         .exec((err, posts) => {
             if (err) {
@@ -144,3 +145,36 @@ exports.getPostPhoto = (req, res, next) => {
     res.set("Content-Type", req.post.photo.contentType);
     return res.send(req.post.photo.data);
 };
+
+exports.likePost = (req, res) => {
+    Post.findByIdAndUpdate(
+        req.body.postId,
+        { $push: { likes: req.body.userId } }, // add new data to post
+        { new: true } // need this to return new data
+    ).exec((err, result) => {
+        if (err) {
+            return res.status(400).json({
+                error: err
+            });
+        } else {
+            res.json(result);
+        }
+    });
+};
+
+exports.unlikePost = (req, res) => {
+    Post.findByIdAndUpdate(
+        req.body.postId,
+        { $pull: { likes: req.body.userId } }, // pull out the userId from list of likes
+        { new: true } // need this to return new data
+    ).exec((err, result) => {
+        if (err) {
+            return res.status(400).json({
+                error: err
+            });
+        } else {
+            res.json(result);
+        }
+    });
+};
+
