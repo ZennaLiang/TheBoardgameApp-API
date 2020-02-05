@@ -11,11 +11,14 @@ const {
     addFollowing,
     addFollower,
     removeFollowing,
-    removeFollower
+    removeFollower, 
+    findPeople
 } = require("../controllers/user");
 
 
 const router = express.Router();
+
+// follow/unfollow must be above the rest
 router.put("/user/follow", requireSignIn, addFollowing, addFollower);
 router.put("/user/unfollow", requireSignIn, removeFollowing, removeFollower);
 
@@ -25,7 +28,7 @@ router.put("/user/:userId", requireSignIn, updateUser);
 router.delete("/user/:userId", requireSignIn, deleteUser);
 router.get("/user/photo/:userId", getUserPhoto);
 
-
+router.get("/user/findpeople/:userId", requireSignIn, findPeople);
 
 // any route containing :userId, our app will first execute userByID()
 router.param("userId", findUserById);

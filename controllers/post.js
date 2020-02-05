@@ -21,9 +21,11 @@ exports.findPostById = (req, res, next, id) => {
 exports.getPosts = (req, res) => {
     const posts = Post.find()
         .populate("postedBy", "_id name") // get postedBy user info
-        .select("_id title body")
+        .select("_id title body createdDate")
+        .sort({createdDate: -1})
         .then(posts => {
-            res.json({ posts });
+            // res.json({ posts }); // doesnt work w/ .map() on front end
+            res.json(posts); // send as array to be used by .map()
         })
         .catch(err => console.log(err));
 };
@@ -45,11 +47,9 @@ exports.postsByUser = (req, res) => {
 
 
 
-exports.createPost = (req, res) => {
-    // get incoming form fields
+exports.createPost = (req, res, next) => {
     let form = new formidable.IncomingForm();
     form.keepExtensions = true;
-    // get the req and parse the fields
     form.parse(req, (err, fields, files) => {
         if (err) {
             return res.status(400).json({
@@ -58,16 +58,13 @@ exports.createPost = (req, res) => {
         }
         let post = new Post(fields);
 
-        // should not show password on front end
         req.profile.hashed_password = undefined;
         req.profile.salt = undefined;
         post.postedBy = req.profile;
 
-        if (files.image) {
-            // read file path and type
-            post.image.data = fs.readFileSync(files.image.path);
-            // them save the type into image
-            post.image.contentType = files.image.type;
+        if (files.photo) {
+            post.photo.data = fs.readFileSync(files.photo.path);
+            post.photo.contentType = files.photo.type;
         }
         post.save((err, result) => {
             if (err) {
@@ -79,6 +76,7 @@ exports.createPost = (req, res) => {
         });
     });
 };
+
 exports.isPoster = (req, res, next) => {
     let isPoster =
         req.post && req.auth && req.post.postedBy._id == req.auth._id;
@@ -93,12 +91,11 @@ exports.isPoster = (req, res, next) => {
     }
     next();
 };
+
 exports.updatePost = (req, res, next) => {
-    
     let post = req.post;
     post = _.extend(post, req.body);
     post.updated = Date.now();
-    
     post.save(err => {
         if (err) {
             return res.status(400).json({
@@ -108,6 +105,7 @@ exports.updatePost = (req, res, next) => {
         res.json(post);
     });
 };
+
 
 exports.deletePost = (req, res) => {
     let post = req.post;
@@ -121,4 +119,10 @@ exports.deletePost = (req, res) => {
             message: "Post deleted successfully"
         });
     });
+};
+
+
+exports.getPostPhoto = (req, res, next) => {
+    res.set("Content-Type", req.post.photo.contentType);
+    return res.send(req.post.photo.data);
 };
