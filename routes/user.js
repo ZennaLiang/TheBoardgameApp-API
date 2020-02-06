@@ -18,11 +18,12 @@ const {
 
 const router = express.Router();
 
+router.get("/users", findAllUsers);
+
 // follow/unfollow must be above the rest
 router.put("/user/follow", requireSignIn, addFollowing, addFollower);
 router.put("/user/unfollow", requireSignIn, removeFollowing, removeFollower);
 
-router.get("/users", findAllUsers);
 router.get("/user/:userId", requireSignIn, getUser);
 router.put("/user/:userId", requireSignIn, updateUser);
 router.delete("/user/:userId", requireSignIn, deleteUser);

@@ -7,6 +7,8 @@ const Post = require("../models/post");
 exports.findPostById = (req, res, next, id) => {
     Post.findById(id)
         .populate("postedBy", "_id name")
+        .populate("comments.postedBy", "_id name")
+        .populate("postedBy", "_id name")
         .exec((err, post) => {
             if (err || !post) {
                 return res.status(400).json({
@@ -17,6 +19,7 @@ exports.findPostById = (req, res, next, id) => {
             next();
         });
 };
+
 exports.getPost = (req, res) => {
     return res.json(req.post);
 };
@@ -24,8 +27,10 @@ exports.getPost = (req, res) => {
 exports.getPosts = (req, res) => {
     const posts = Post.find()
         .populate("postedBy", "_id name") // get postedBy user info
+        .populate("comments", "text createdDate")
+        .populate("comments.postedBy", "_id name")
         .select("_id title body createdDate likes")
-        .sort({createdDate: -1})
+        .sort({ createdDate: -1 })
         .then(posts => {
             // res.json({ posts }); // doesnt work w/ .map() on front end
             res.json(posts); // send as array to be used by .map()
@@ -36,7 +41,7 @@ exports.getPosts = (req, res) => {
 /* find post based on posted by user */
 exports.postsByUser = (req, res) => {
     Post.find({ postedBy: req.profile._id })
-        .populate("postedBy", "_id name") 
+        .populate("postedBy", "_id name")
         .select("_id title body createdDate likes")
         .sort("_created")
         .exec((err, posts) => {
@@ -178,3 +183,45 @@ exports.unlikePost = (req, res) => {
     });
 };
 
+exports.commentPost = (req, res) => {
+    let comment = req.body.comment;
+    comment.postedBy = req.body.userId;
+
+    Post.findByIdAndUpdate(
+        req.body.postId,
+        { $push: { comments: comment } },
+        { new: true }
+    )
+        .populate("comments.postedBy", "_id name")
+        .populate("postedBy", "_id name")
+        .exec((err, result) => {
+            if (err) {
+                return res.status(400).json({
+                    error: err
+                });
+            } else {
+                res.json(result);
+            }
+        });
+};
+
+exports.uncommentPost = (req, res) => {
+    let comment = req.body.comment;
+
+    Post.findByIdAndUpdate(
+        req.body.postId,
+        { $pull: { comments: { _id: comment._id } } },
+        { new: true }
+    )
+        .populate("comments.postedBy", "_id name")
+        .populate("postedBy", "_id name")
+        .exec((err, result) => {
+            if (err) {
+                return res.status(400).json({
+                    error: err
+                });
+            } else {
+                res.json(result);
+            }
+        });
+};
