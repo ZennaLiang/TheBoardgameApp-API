@@ -8,7 +8,8 @@ const {
     signIn, 
     signOut,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    socialLogin
 } = require("../controllers/auth");
 
 router.post("/signup", userSignupValidator, signUp);
@@ -18,6 +19,8 @@ router.get("/signout", signOut);
 // password forgot and reset routes
 router.put("/forgot-password", forgotPassword);
 router.put("/reset-password", passwordResetValidator, resetPassword);
+
+router.post("/social-login", socialLogin);
 
 // check if user exist when any route uses :userId in para
 router.param("userId", findUserById);
