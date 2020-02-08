@@ -52,6 +52,7 @@ exports.socialLogin = (req, res) => {
             // create a new user and login
             user = new User(req.body);
             req.profile = user;
+            //console.log("user info social login: ", user);
             user.save();
             // generate a token with user id and secret
             const token = jwt.sign(
