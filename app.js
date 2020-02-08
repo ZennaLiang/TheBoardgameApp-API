@@ -1,12 +1,13 @@
-const express = require("express");
+const express = require('express');
 const app = express();
-const mongoose = require("mongoose");
-const morgan = require("morgan");
-const bodyParser = require("body-parser");
-const expressValidator = require("express-validator");
-const cors = require("cors");
-var cookieParser = require("cookie-parser");
-const dotenv = require("dotenv");
+const mongoose = require('mongoose');
+const morgan = require('morgan');
+const bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+const expressValidator = require('express-validator');
+const fs = require('fs');
+const cors = require('cors');
+const dotenv = require('dotenv');
 dotenv.config();
 
 /**************************************************************************
@@ -35,7 +36,7 @@ const userRoutes = require("./routes/user");
 /**************************************************************************
 **************************         API DOC         ************************
 **************************************************************************/
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
     fs.readFile("docs/apiDocs.json", (err, data) => {
         if (err) {
             res.status(400).json({
@@ -55,9 +56,9 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(expressValidator());
 app.use(cors());
-app.use("/", postRoutes);
-app.use("/", authRoutes);
-app.use("/", userRoutes);
+app.use("/api", postRoutes);
+app.use("/api", authRoutes);
+app.use("/api", userRoutes);
 
 // show error when user try to access web without authorization  
 app.use(function(err, req, res, next) {
