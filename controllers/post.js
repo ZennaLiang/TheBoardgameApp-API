@@ -87,12 +87,14 @@ exports.createPost = (req, res, next) => {
 };
 
 exports.isPoster = (req, res, next) => {
-    let isPoster =
-        req.post && req.auth && req.post.postedBy._id == req.auth._id;
-    // console.log("req.post: ", req.post);
-    // console.log("req.auth: ", req.auth);
-    // console.log("req.post.postedBy._id: ", req.post.postedBy._id);
-    // console.log("req.auth._id: ", req.auth._id );
+    let sameUser = req.post && req.auth && req.post.postedBy._id == req.auth._id;
+    let adminUser = req.post && req.auth && req.auth.role === "admin";
+
+    //console.log("req.post ", req.post, " req.auth ", req.auth);
+    //console.log("SAMEUSER: ", sameUser, " ADMINUSER: ", adminUser);
+
+    let isPoster = sameUser || adminUser;
+
     if (!isPoster) {
         return res.status(403).json({
             error: "User is not authorized"

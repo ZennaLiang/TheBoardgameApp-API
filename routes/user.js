@@ -12,7 +12,8 @@ const {
     addFollower,
     removeFollowing,
     removeFollower, 
-    findPeople
+    findPeople,
+    hasAuthorization
 } = require("../controllers/user");
 
 
@@ -25,8 +26,8 @@ router.put("/user/follow", requireSignIn, addFollowing, addFollower);
 router.put("/user/unfollow", requireSignIn, removeFollowing, removeFollower);
 
 router.get("/user/:userId", requireSignIn, getUser);
-router.put("/user/:userId", requireSignIn, updateUser);
-router.delete("/user/:userId", requireSignIn, deleteUser);
+router.put("/user/:userId", requireSignIn, hasAuthorization, updateUser);
+router.delete("/user/:userId", requireSignIn, hasAuthorization, deleteUser);
 router.get("/user/photo/:userId", getUserPhoto);
 
 router.get("/user/findpeople/:userId", requireSignIn, findPeople);

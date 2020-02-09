@@ -36,12 +36,12 @@ exports.signIn = (req, res) => {
             });
         }
         // generate a token with user id and secret
-        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+        const token = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET);
         // persist the token as 't' in cookie with expiry date
         res.cookie("t", token, { expire: new Date() + 9999 });
         // retrun response with user and token to frontend client
-        const { _id, name, email } = user;
-        return res.json({ token, user: { _id, email, name } });
+        const { _id, name, email, role } = user;
+        return res.json({ token, user: { _id, email, name, role } });
     });
 };
 
@@ -56,13 +56,13 @@ exports.socialLogin = (req, res) => {
             user.save();
             // generate a token with user id and secret
             const token = jwt.sign(
-                { _id: user._id, iss: "NODEAPI" },
+                { _id: user._id, role: user.role, iss: "NODEAPI" },
                 process.env.JWT_SECRET
             );
             res.cookie("t", token, { expire: new Date() + 9999 });
             // return response with user and token to frontend client
-            const { _id, name, email } = user;
-            return res.json({ token, user: { _id, name, email } });
+            const { _id, name, email, role } = user;
+            return res.json({ token, user: { _id, name, email, role } });
         } else {
             // update existing user with new social info and login
             req.profile = user;
@@ -71,13 +71,13 @@ exports.socialLogin = (req, res) => {
             user.save();
             // generate a token with user id and secret
             const token = jwt.sign(
-                { _id: user._id, iss: "NODEAPI" },
+                { _id: user._id, role: user.role, iss: "NODEAPI" },
                 process.env.JWT_SECRET
             );
             res.cookie("t", token, { expire: new Date() + 9999 });
             // return response with user and token to frontend client
-            const { _id, name, email } = user;
-            return res.json({ token, user: { _id, name, email } });
+            const { _id, name, email, role } = user;
+            return res.json({ token, user: { _id, name, email, role } });
         }
     });
 };
