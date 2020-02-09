@@ -13,12 +13,11 @@ dotenv.config();
 /**************************************************************************
 **************************       DB Connection    ************************
 **************************************************************************/
-mongoose.connect(
-        process.env.MONGO_URI, { 
-            useUnifiedTopology: true,
-            useNewUrlParser: true 
-        }
-    )
+mongoose
+    .connect(process.env.MONGO_URI, {
+        useUnifiedTopology: true,
+        useNewUrlParser: true
+    })
     .then(() => console.log("DB Connected"));
 
 mongoose.connection.on("error", err => {
@@ -36,8 +35,8 @@ const userRoutes = require("./routes/user");
 /**************************************************************************
 **************************         API DOC         ************************
 **************************************************************************/
-app.get("/api", (req, res) => {
-    fs.readFile("docs/apiDocs.json", (err, data) => {
+app.get('/api', (req, res) => {
+    fs.readFile('docs/apiDocs.json', (err, data) => {
         if (err) {
             res.status(400).json({
                 error: err
@@ -51,17 +50,17 @@ app.get("/api", (req, res) => {
 /**************************************************************************
 **************************       Middleware       ************************
 **************************************************************************/
-app.use(morgan("dev"));
+app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(expressValidator());
 app.use(cors());
-app.use("/api", postRoutes);
-app.use("/api", authRoutes);
-app.use("/api", userRoutes);
+app.use('/api', postRoutes);
+app.use('/api', authRoutes);
+app.use('/api', userRoutes);
 
 // show error when user try to access web without authorization  
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
     if (err.name === "UnauthorizedError") {
         res.status(401).json({ error: "Unauthorized Access!" });
     }
