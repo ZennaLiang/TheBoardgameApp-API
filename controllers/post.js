@@ -51,7 +51,6 @@ exports.getPosts = async (req, res) => {
         .catch(err => console.log(err));
 };
 
-
 /* find post based on posted by user */
 exports.postsByUser = (req, res) => {
     Post.find({ postedBy: req.profile._id })

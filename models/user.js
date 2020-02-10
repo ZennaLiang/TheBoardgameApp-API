@@ -3,6 +3,8 @@ const uuidv1 = require("uuid/v1");//for random string and time stamp
 const crypto = require("crypto"); //for hash password
 const { ObjectId } = mongoose.Schema; // object with name and ids
 
+const Post = require("./post");
+
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -91,5 +93,10 @@ userSchema.methods = {
         }
     }
 };
+
+userSchema.pre("remove", function(next) {
+    Post.remove({ postedBy: this._id }).exec();
+    next();
+});
 
 module.exports = mongoose.model("User", userSchema);
