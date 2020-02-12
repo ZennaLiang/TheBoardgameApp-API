@@ -28,7 +28,7 @@ exports.getPosts = async (req, res) => {
     // get current page from req.query or use default value of 1
     const currentPage = req.query.page || 1;
     // return 3 posts per page
-    const perPage = 3;
+    const perPage = 5;
     let totalItems;
  
     const posts = await Post.find()
@@ -41,15 +41,16 @@ exports.getPosts = async (req, res) => {
                 .populate("comments", "text createdDate")
                 .populate("comments.postedBy", "_id name")
                 .populate("postedBy", "_id name")
-                .sort({ date: -1 })
+                .sort({ createdDate: -1 })
                 .limit(perPage)
-                .select("_id title body likes");
+                .select("_id title body likes createdDate"); 
         })
         .then(posts => {
             res.status(200).json(posts);
         })
         .catch(err => console.log(err));
 };
+
 
 /* find post based on posted by user */
 exports.postsByUser = (req, res) => {
@@ -122,7 +123,7 @@ exports.updatePost = (req, res, next) => {
     form.parse(req, (err, fields, files) => {
         if (err) {
             return res.status(400).json({
-                error: "Photo could not be uploaded"
+                error: 'Photo could not be uploaded'
             });
         }
         // save post

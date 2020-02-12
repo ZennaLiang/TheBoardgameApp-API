@@ -69,7 +69,7 @@ exports.socialLogin = async (req, res) => {
                 const token = jwt.sign({ _id: user._id, role: user.role, iss: process.env.APP_NAME }, process.env.JWT_SECRET);
                 res.cookie('t', token, { expire: new Date() + 9999 });
                 // return response with user and token to frontend client
-                const { _id, name, emai, rolel } = user;
+                const { _id, name, email, role } = user;
                 return res.json({ token, user: { _id, name, email, role } });
             } else {
                 // update existing user with new social info and login
