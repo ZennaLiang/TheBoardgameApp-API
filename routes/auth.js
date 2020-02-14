@@ -9,7 +9,8 @@ const {
     signOut,
     forgotPassword,
     resetPassword,
-    socialLogin
+    googleLogin,
+    facebookLogin
 } = require("../controllers/auth");
 
 router.post("/signup", userSignupValidator, signUp);
@@ -20,7 +21,8 @@ router.get("/signout", signOut);
 router.put("/forgot-password", forgotPassword);
 router.put("/reset-password", passwordResetValidator, resetPassword);
 
-router.post("/social-login", socialLogin);
+router.post("/google-login", googleLogin);
+router.post("/facebook-login", facebookLogin);
 
 // check if user exist when any route uses :userId in para
 router.param("userId", findUserById);
