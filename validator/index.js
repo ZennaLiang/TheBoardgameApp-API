@@ -33,36 +33,26 @@ exports.userSignupValidator = (req, res, next) => {
     .check("name")
     .isAlpha()
     .withMessage("Name can only contain alphabets")
-    .isLength({ min: 2 })
-    .withMessage("Name must have at least 2 or more characters");
+    .isLength({ min: 2, max: 75 })
+    .withMessage("Name must be between 2 to 75 characters");
 
   // email is not null, valid and normalized
   req
-    .check("email", "Email must be between 3 to 32 characters")
-    .isLength({
-      min: 4,
-      max: 2000
-    })
-    .matches(
-      /^(?=.{1,254}$)(?=.{1,64}@)[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+(\.[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/
-    )
-    .withMessage("Please enter valid email address")
-    .isLength({
-      min: 4,
-      max: 1000
-    })
+    .check("email", "Email must be between 3 to 254 characters")
+    .isLength({ min: 4, max: 255})
+    .matches(/^(?=.{1,254}$)(?=.{1,64}@)[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+(\.[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/)
     .withMessage("Please enter valid email address");
 
   // check for password
- 
+
   req
     .check("password")
-    .isLength({ min: 6 })
-    .withMessage("Password must contain at least 6 characters")
+    .isLength({ min: 8, max: 65 })
+    .withMessage("Password must contain at least 8 characters")
     .matches(/\d/)
     .withMessage("Password must contain number")
-    .matches(/(?=.*[A-Z])/)
-    .withMessage("Password must contain at least 1 uppercase alphabetical character")
+    .matches(/(?=.*[A-Za-z])/)
+    .withMessage("Password must contain at least 1 uppercase & lowercase character")
     .custom(() => {
       if (req.body.password === req.body.matchPassword) return true;
       return false;
