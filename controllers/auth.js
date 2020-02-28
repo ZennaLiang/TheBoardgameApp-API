@@ -11,7 +11,7 @@ exports.signUp = async (req, res) => {
     const userExists = await User.findOne({ email: req.body.email });
     if (userExists) {
         return res.status(403).json({
-            error: "This email is taken"
+            error: "This email is already taken. Please try another."
         });
     }
     const user = await new User(req.body);
@@ -26,7 +26,7 @@ exports.signIn = (req, res) => {
         // if err or no user
         if (err || !user) {
             return res.status(401).json({
-                error: "User with that email does not exist. Please sign up!."
+                error: "User with that email does not exist. Please sign up!"
             });
         }
         // if user is found make sure the email and password match
