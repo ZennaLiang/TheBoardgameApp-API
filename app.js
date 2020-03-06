@@ -30,7 +30,7 @@ mongoose.connection.on("error", err => {
 const postRoutes = require("./routes/post");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
-
+const boardgameRoutes = require("./routes/boardgame");
 
 /**************************************************************************
 **************************         API DOC         ************************
@@ -58,7 +58,7 @@ app.use(cors());
 app.use('/api', postRoutes);
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
-
+app.use('/api', boardgameRoutes);
 // show error when user try to access web without authorization  
 app.use(function (err, req, res, next) {
     if (err.name === "UnauthorizedError") {
