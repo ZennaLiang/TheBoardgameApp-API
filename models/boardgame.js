@@ -15,19 +15,19 @@ const boardgameSchema = new mongoose.Schema({
         required: true
     },
     minPlayers: {
-        type: String,
+        type: Number,
         required:true
     },
     maxPlayers: {
-        type:String,
+        type:Number,
         required:true
     },
     minPlayTime: {
-        type:String,
+        type:Number,
         required:true
     },
     maxPlayTime: {
-        type:String,
+        type:Number,
         required:true
     },
     imgThumbnail: {
