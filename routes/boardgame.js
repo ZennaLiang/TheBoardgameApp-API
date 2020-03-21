@@ -3,7 +3,6 @@ const express = require("express");
 const { 
     getBbgBoardgames, 
     getBoardgame,
-    findBgByUsername,
     getBBGCounts
    
 } = require("../controllers/boardgame");

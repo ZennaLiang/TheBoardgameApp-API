@@ -13,20 +13,22 @@ const {
     removeFollowing,
     removeFollower, 
     findPeople,
-    hasAuthorization
+    hasAuthorization,
+    updateBbgUsername
 } = require("../controllers/user");
 
 
 const router = express.Router();
 
 router.get("/users", findAllUsers);
-
+router.put("/user/bbg/:userId",requireSignIn,hasAuthorization, updateBbgUsername);
 // follow/unfollow must be above the rest
 router.put("/user/follow", requireSignIn, addFollowing, addFollower);
 router.put("/user/unfollow", requireSignIn, removeFollowing, removeFollower);
 
 router.get("/user/:userId", requireSignIn, getUser);
 router.put("/user/:userId", requireSignIn, hasAuthorization, updateUser);
+
 router.delete("/user/:userId", requireSignIn, hasAuthorization, deleteUser);
 router.get("/user/photo/:userId", getUserPhoto);
 

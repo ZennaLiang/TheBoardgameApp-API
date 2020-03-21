@@ -23,7 +23,6 @@ exports.findUserById = (req, res, next, id) => {
 };
 
 exports.hasAuthorization = (req, res, next) => {
-  //console.log("authorization: ", req.body);
   let sameUser = req.profile && req.auth && req.profile._id == req.auth._id;
   let adminUser = req.profile && req.auth && req.auth.role === "admin";
 
@@ -56,7 +55,6 @@ exports.getUser = (req, res) => {
 };
 
 exports.updateUser = (req, res, next) => {
-  console.log("update body", req.body);
   let form = new formidable.IncomingForm();
   form.keepExtensions = true;
   form.parse(req, (err, fields, files) => {
