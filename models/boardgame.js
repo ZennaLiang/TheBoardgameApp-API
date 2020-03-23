@@ -4,7 +4,8 @@ const { ObjectId } = mongoose.Schema;
 const boardgameSchema = new mongoose.Schema({
     objectId:{
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     title: {
         type: String,
@@ -31,8 +32,7 @@ const boardgameSchema = new mongoose.Schema({
         required:true
     },
     imgThumbnail: {
-        type: String,
-        required: true
+        type: String
     },
     avgRating: {
         type: String,
