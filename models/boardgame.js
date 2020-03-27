@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema;
 
 const boardgameSchema = new mongoose.Schema({
-    objectId:{
+    bggObjId:{
         type: String,
         required: true,
         unique: true

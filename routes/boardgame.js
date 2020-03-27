@@ -12,7 +12,7 @@ const { findUserById } = require("../controllers/user");
 const router = express.Router();
 
 
-router.get("/boardgame/:username", getBbgBoardgames);
-router.get("/boardgame/count/:username", getBBGCounts);
+router.get("/boardgame/:bbgUsername", getBbgBoardgames);
+router.get("/boardgame/count/:bbgUsername", getBBGCounts);
 
 module.exports = router;
