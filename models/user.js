@@ -4,7 +4,7 @@ const crypto = require("crypto"); //for hash password
 const { ObjectId } = mongoose.Schema; // object with name and ids
 
 const Post = require("./post");
-
+const Boardgame = require("./boardgame");
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -46,7 +46,17 @@ const userSchema = new mongoose.Schema({
     },
     bbgUsername: {
         type: String
-    }
+    },
+    boardgames:[{
+        bbgId: { type: String, ref: "Boardgame", unique: true },
+        notes: String,
+        forTrade: Boolean,
+        forSale: Boolean,
+        wantFromTrade: Boolean,
+        wantFromBuy: Boolean,
+        wantToPlay:Boolean,
+        numOfPlay: Number
+    }]
 });
 
 /**************************************************************************
@@ -73,6 +83,11 @@ userSchema
         return this._password;
     });
 
+    userSchema.virtual('boardgameColl', {
+        ref:"Boardgame",
+        localField: 'boardgames.bbgId',
+        foreignField: 'bbgId'
+    })
 /**************************************************************************
 **************************************************************************
 ***************************       methods       **************************

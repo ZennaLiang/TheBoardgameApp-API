@@ -1,11 +1,12 @@
 const _ = require("lodash");
 const formidable = require("formidable");
 const fs = require("fs");
-
+const axios = require("axios");
 const User = require("../models/user");
-const { getBbgBoardgamesByUsername } = require("./boardgame");
+const XML2JS = require("xml2js");
+const Boardgame = require("../models/boardgame");
 exports.findUserById = (req, res, next, id) => {
-  // console.log("find user by id: ", req.body);
+  //console.log("find user by id: ", id);
   //.exec will either get error or user info
   User.findById(id)
     // populate followers and following users array
@@ -86,23 +87,84 @@ exports.updateUser = (req, res, next) => {
     });
   });
 };
-exports.updateBbgUsername = (req, res, next) => {
+
+async function fetchCollection(url) {
+  return await axios
+    .get(url)
+    .then(response => {
+      return response;
+    })
+    .catch(err => console.log(err));
+}
+
+function processBbgBoardgame(bgItem) {
+  //console.log("bgItem", bgItem.comment);
+  let stats = bgItem.status[0].$;
+  let bg = {
+    bbgId: bgItem.$.objectid,
+    forTade: stats.fortrade,
+    wantFromTrade: stats.want,
+    wantFromBuy: stats.wantotbuy,
+    wantToPlay: stats.wanttoplay,
+    notes: bgItem.comment === undefined ? "" : bgItem.comment[0],
+    numOfPlay: bgItem.numplays[0]
+  };
+  return bg;
+}
+
+exports.updateBbgUsername = (req, res) => {
   let user = req.profile;
-  user = _.extend(user, req.body);
   user.updated = Date.now();
-
-  user.save((err, result) => {
-    if (err) {
-      return res.status(400).json({
-        error: err
-      });
-    }
-
-    user.hashed_password = undefined;
-    user.salt = undefined;
-    res.json({ user });
-  });
+  const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bbgUsername}&subtype=boardgame&stats=1`;
+  if (req.body.counter === undefined) {
+    req.body.counter = 0;
+  } else {
+    req.body.counter += 1;
+  }
+  if (req.body.counter > 5) {
+    return res.status(419).json({ error: "Collection too large" });
+  }
+  fetchCollection(url)
+    .then(response => {
+      if (response.status === 200) {
+        let boardgames = [];
+        let xml = XML2JS.parseString(response.data, (err, result) => {
+          if (result.errors && result.items === undefined) {
+            return res.status(404).json({ error: "Username not found" });
+          }
+          if (result.items.$.totalitems !== "0") {
+            result.items.item.forEach(bgItem => {
+              let boardgame = processBbgBoardgame(bgItem);
+              boardgames.push(boardgame);
+            });
+            boardgames.forEach(async bgItem => {
+              if(user.boardgames.find(boardgame => boardgame.bbgId === bgItem.bbgId) === undefined){
+                user.boardgames.push(bgItem);
+              }
+            });
+            user.save((err, result) => {
+              if (err) {
+                console.log(err);
+              }
+              user.hashed_password = undefined;
+              user.salt = undefined;
+            });
+          }
+        });
+        res.status(200).json({ user });
+      } else if (response.status === 202) {
+        console.log("status", response.status);
+        setTimeout(() => {
+          this.updateBbgUsername(req, res);
+        }, 5000);
+      }
+    })
+    .catch(err => {
+      return res.status(404).json({ error: "Error fetching data." });
+    });
 };
+
+
 
 exports.deleteUser = (req, res, next) => {
   let user = req.profile;
