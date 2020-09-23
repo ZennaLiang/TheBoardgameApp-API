@@ -124,6 +124,7 @@ exports.updateBggUsername = (req, res) => {
   if (req.body.counter > 5) {
     return res.status(419).json({ error: "Collection too large" });
   }
+  user.bggUsername = req.params.bggUsername;
   fetchCollection(url)
     .then(response => {
       if (response.status === 200) {
