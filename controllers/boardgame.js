@@ -31,10 +31,9 @@ async function fetchCollection(url) {
     .catch(err => console.log(err));
 }
 
-function processBbgBoardgame(bgItem){
+function processBggBoardgame(bgItem){
   let boardgame = {
-    _id: bgItem.$.objectid,
-   // bggObjId: bgItem.$.objectid,
+    bggId: bgItem.$.objectid,
 
     title:
       bgItem.name[0]._ === undefined
@@ -84,8 +83,8 @@ function processBbgBoardgame(bgItem){
 }
 
 
-exports.getBbgBoardgames = (req, res) => {
-  const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bbgUsername}&subtype=boardgame&stats=1`;
+exports.getBggBoardgames = (req, res) => {
+  const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
   //const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=sfsa&subtype=boardgame&own=0&stats=1`;
   if (req.body.counter === undefined) {
     req.body.counter = 0;
@@ -105,13 +104,13 @@ exports.getBbgBoardgames = (req, res) => {
           }
           if (result.items.$.totalitems !== "0") {
             result.items.item.forEach(bgItem => {
-              let boardgame = processBbgBoardgame(bgItem);
+              let boardgame = processBggBoardgame(bgItem);
               //console.log("bgid: ", boardgame)
               boardgames.push(boardgame);
             });
             boardgames.forEach(async bgItem => {
               await Boardgame.findOneAndUpdate(
-                { _id: bgItem._id },
+                { bggId: bgItem.bggId },
                 bgItem,
                 { upsert: true }
               );
@@ -121,7 +120,7 @@ exports.getBbgBoardgames = (req, res) => {
         return res.status(200).json(boardgames);
       } else if (response.status === 202) {
         setTimeout(() => {
-          this.getBbgBoardgames(req, res);
+          this.getBggBoardgames(req, res);
         }, 5000);
       }
     })
@@ -130,9 +129,11 @@ exports.getBbgBoardgames = (req, res) => {
     });
 };
                 
-
-exports.getUserBbgBoardgames = (req, res) => {
-  const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bbgUsername}&subtype=boardgame&stats=1`;
+exports.getUserCollection = (req, res) => {
+  
+}
+exports.getUserBggBoardgames = (req, res) => {
+  const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
   if (req.body.counter === undefined) {
     req.body.counter = 0;
   } else {
@@ -151,7 +152,7 @@ exports.getUserBbgBoardgames = (req, res) => {
           }
           if (result.items.$.totalitems !== "0") {
             result.items.item.forEach(bgItem => {
-              let boardgame = processBbgBoardgame(bgItem);
+              let boardgame = processBggBoardgame(bgItem);
               boardgames.push(boardgame);
             });
             boardgames.forEach(async bgItem => {
@@ -166,7 +167,7 @@ exports.getUserBbgBoardgames = (req, res) => {
         return res.status(200).json(boardgames);
       } else if (response.status === 202) {
         setTimeout(() => {
-          this.getBbgBoardgames(req, res);
+          this.getBggBoardgames(req, res);
         }, 5000);
       }
     })
@@ -175,9 +176,9 @@ exports.getUserBbgBoardgames = (req, res) => {
     });
 };
 
-exports.getBBGCounts = async (req, res) => {
+exports.getBGGCounts = async (req, res) => {
   console.log("here:", req.params.username);
-  const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bbgUsername}&subtype=boardgame&own=0&stats=1`;
+  const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&own=0&stats=1`;
   await fetchCollection(url)
     .then(response => {
       console.log("got response from collection");
@@ -196,9 +197,9 @@ exports.getBBGCounts = async (req, res) => {
     .catch(err => console.log(err));
 };
 
-exports.checkBbgAccountExist = async (req, res, next) => {
-  console.log("here:", req.params.bbgUsername);
-  const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bbgUsername}&subtype=boardgame&stats=1`;
+exports.checkBggAccountExist = async (req, res, next) => {
+  console.log("here:", req.params.bggUsername);
+  const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
   await fetchCollection(url)
     .then(response => {
       console.log("got response from collection");
@@ -207,12 +208,12 @@ exports.checkBbgAccountExist = async (req, res, next) => {
           // console.log(result.items);
           if (result.errors) {
             return res.status(404).json({
-              error: `Username: ${req.params.bbgUsername} not found. Please enter correct information.`
+              error: `Username: ${req.params.bggUsername} not found. Please enter correct information.`
             });
           }
           if (result.items.$.totalitems === "0") {
             return res.status(404).json({
-              error: `Username: ${req.params.bbgUsername} does not have a boardgame collection.`
+              error: `Username: ${req.params.bggUsername} does not have a boardgame collection.`
             });
           }
         });

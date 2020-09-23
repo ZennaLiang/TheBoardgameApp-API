@@ -97,11 +97,11 @@ async function fetchCollection(url) {
     .catch(err => console.log(err));
 }
 
-function processBbgBoardgame(bgItem) {
+function processBggBoardgame(bgItem) {
   //console.log("bgItem", bgItem.comment);
   let stats = bgItem.status[0].$;
   let bg = {
-    bbgId: bgItem.$.objectid,
+    bggId: bgItem.$.objectid,
     forTade: stats.fortrade,
     wantFromTrade: stats.want,
     wantFromBuy: stats.wantotbuy,
@@ -112,10 +112,10 @@ function processBbgBoardgame(bgItem) {
   return bg;
 }
 
-exports.updateBbgUsername = (req, res) => {
+exports.updateBggUsername = (req, res) => {
   let user = req.profile;
   user.updated = Date.now();
-  const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bbgUsername}&subtype=boardgame&stats=1`;
+  const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
   if (req.body.counter === undefined) {
     req.body.counter = 0;
   } else {
@@ -134,11 +134,11 @@ exports.updateBbgUsername = (req, res) => {
           }
           if (result.items.$.totalitems !== "0") {
             result.items.item.forEach(bgItem => {
-              let boardgame = processBbgBoardgame(bgItem);
+              let boardgame = processBggBoardgame(bgItem);
               boardgames.push(boardgame);
             });
             boardgames.forEach(async bgItem => {
-              if(user.boardgames.find(boardgame => boardgame.bbgId === bgItem.bbgId) === undefined){
+              if(user.boardgames.find(boardgame => boardgame.bggId === bgItem.bggId) === undefined){
                 user.boardgames.push(bgItem);
               }
             });
@@ -155,7 +155,7 @@ exports.updateBbgUsername = (req, res) => {
       } else if (response.status === 202) {
         console.log("status", response.status);
         setTimeout(() => {
-          this.updateBbgUsername(req, res);
+          this.updateBggUsername(req, res);
         }, 5000);
       }
     })

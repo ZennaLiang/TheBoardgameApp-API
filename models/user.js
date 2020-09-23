@@ -44,11 +44,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "subscriber"
     },
-    bbgUsername: {
+    bggUsername: {
         type: String
     },
     boardgames:[{
-        bbgId: { type: String, ref: "Boardgame", unique: true },
+        bggId: { type: String, ref: "Boardgame", unique: true },
         notes: String,
         forTrade: Boolean,
         forSale: Boolean,
@@ -85,8 +85,8 @@ userSchema
 
     userSchema.virtual('boardgameColl', {
         ref:"Boardgame",
-        localField: 'boardgames.bbgId',
-        foreignField: 'bbgId'
+        localField: 'boardgames.bggId',
+        foreignField: 'bggId'
     })
 /**************************************************************************
 **************************************************************************

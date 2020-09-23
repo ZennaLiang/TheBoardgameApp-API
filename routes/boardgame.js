@@ -1,9 +1,10 @@
 const express = require("express");
 
 const { 
-    getBbgBoardgames, 
+    getBggBoardgames, 
+    getUserBggBoardgames,
     getBoardgame,
-    getBBGCounts
+    getBGGCounts
    
 } = require("../controllers/boardgame");
 
@@ -11,8 +12,8 @@ const { findUserById } = require("../controllers/user");
 
 const router = express.Router();
 
-
-router.get("/boardgame/:bbgUsername", getBbgBoardgames);
-router.get("/boardgame/count/:bbgUsername", getBBGCounts);
+router.get("/boardgame/user/:bggUsername", getUserBggBoardgames);
+router.get("/boardgame/:bggUsername", getBggBoardgames);
+router.get("/boardgame/count/:bggUsername", getBGGCounts);
 
 module.exports = router;
