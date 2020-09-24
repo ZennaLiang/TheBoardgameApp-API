@@ -1,3 +1,7 @@
+// uses express validator middleware to validate 
+// https://express-validator.github.io/docs/
+
+
 exports.createPostValidator = (req, res, next) => {
   // title
   req.check("title", "Write a title").notEmpty();
@@ -31,7 +35,7 @@ exports.userSignupValidator = (req, res, next) => {
 
   req
     .check("name")
-    .isAlpha()
+    .matches(/^([a-zA-Z ])+$/)
     .withMessage("Name can only contain alphabets")
     .isLength({ min: 2, max: 75 })
     .withMessage("Name must be between 2 to 75 characters");
