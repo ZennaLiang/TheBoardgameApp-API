@@ -15,7 +15,7 @@ exports.findUserById = (req, res, next, id) => {
     .exec((err, user) => {
       if (err || !user) {
         return res.status(400).json({
-          error: "User not found"
+          error: "User not found",
         });
       }
       req.profile = user; // adds profile object in req with user info
@@ -31,7 +31,7 @@ exports.hasAuthorization = (req, res, next) => {
 
   if (!authorized) {
     return res.status(403).json({
-      error: "User is not authorized to perform this action"
+      error: "User is not authorized to perform this action",
     });
   }
   next();
@@ -41,7 +41,7 @@ exports.findAllUsers = (req, res) => {
   User.find((err, users) => {
     if (err) {
       return res.status(400).json({
-        error: err
+        error: err,
       });
     }
     res.json(users);
@@ -61,7 +61,7 @@ exports.updateUser = (req, res, next) => {
   form.parse(req, (err, fields, files) => {
     if (err) {
       return res.status(400).json({
-        error: "Photo could not be uploaded"
+        error: "Photo could not be uploaded",
       });
     }
     // save user
@@ -77,7 +77,7 @@ exports.updateUser = (req, res, next) => {
     user.save((err, result) => {
       if (err) {
         return res.status(400).json({
-          error: err
+          error: err,
         });
       }
       // so these don't get pass to the front end
@@ -88,30 +88,37 @@ exports.updateUser = (req, res, next) => {
   });
 };
 
+// helper fxn to get collection
+// use for loops in the other fxn
 async function fetchCollection(url) {
   return await axios
     .get(url)
-    .then(response => {
+    .then((response) => {
       return response;
     })
-    .catch(err => console.log(err));
+    .catch((err) => console.log(err));
 }
 
+// helper fxn to process bggeek format to be use
 function processBggBoardgame(bgItem) {
-  //console.log("bgItem", bgItem.comment);
   let stats = bgItem.status[0].$;
   let bg = {
     bggId: bgItem.$.objectid,
-    forTade: stats.fortrade,
-    wantFromTrade: stats.want,
-    wantFromBuy: stats.wantotbuy,
-    wantToPlay: stats.wanttoplay,
+    forTade: stats.fortrade === "1",
+    wantFromTrade: stats.want === "1",
+    wantFromBuy: stats.wanttobuy === "1",
+    wantToPlay: stats.wanttoplay === "1",
     notes: bgItem.comment === undefined ? "" : bgItem.comment[0],
-    numOfPlay: bgItem.numplays[0]
+    numOfPlay: bgItem.numplays[0],
   };
   return bg;
 }
 
+// set boardgamegeek username and sync collection to bgguru
+// get collection, format it, then check if each exist within user collection
+// add if not exist, update if it does
+// since it may take a while to load from bggeek and it may return 202
+// keep looping until successful
 exports.updateBggUsername = (req, res) => {
   let user = req.profile;
   user.updated = Date.now();
@@ -126,7 +133,7 @@ exports.updateBggUsername = (req, res) => {
   }
   user.bggUsername = req.params.bggUsername;
   fetchCollection(url)
-    .then(response => {
+    .then((response) => {
       if (response.status === 200) {
         let boardgames = [];
         let xml = XML2JS.parseString(response.data, (err, result) => {
@@ -134,13 +141,24 @@ exports.updateBggUsername = (req, res) => {
             return res.status(404).json({ error: "Username not found" });
           }
           if (result.items.$.totalitems !== "0") {
-            result.items.item.forEach(bgItem => {
+            result.items.item.forEach((bgItem) => {
               let boardgame = processBggBoardgame(bgItem);
               boardgames.push(boardgame);
             });
-            boardgames.forEach(async bgItem => {
-              if(user.boardgames.find(boardgame => boardgame.bggId === bgItem.bggId) === undefined){
+            boardgames.forEach(async (bgItem) => {
+              let bg = user.boardgames.find(
+                (boardgame) => boardgame.bggId === bgItem.bggId
+              );
+              if (bg === undefined) {
                 user.boardgames.push(bgItem);
+              } else {
+                bg.forTrade = bgItem.forTade;
+                bg.forSale = bgItem.forSale;
+                bg.wantFromTrade = bgItem.wantFromTrade;
+                bg.wantFromBuy = bgItem.wantFromBuy;
+                bg.wantToPlay = bgItem.wantToPlay;
+                bg.numOfPlay = bgItem.numOfPlay;
+                bg.notes = bgItem.notes;
               }
             });
             user.save((err, result) => {
@@ -160,19 +178,17 @@ exports.updateBggUsername = (req, res) => {
         }, 5000);
       }
     })
-    .catch(err => {
+    .catch((err) => {
       return res.status(404).json({ error: "Error fetching data." });
     });
 };
-
-
 
 exports.deleteUser = (req, res, next) => {
   let user = req.profile;
   user.remove((err, user) => {
     if (err) {
       return res.status(400).json({
-        error: err
+        error: err,
       });
     }
     res.json({ message: "User deleted successfully" });
@@ -213,7 +229,7 @@ exports.addFollower = (req, res) => {
     .exec((err, result) => {
       if (err) {
         return res.status(400).json({
-          error: err
+          error: err,
         });
       }
       result.hashed_password = undefined;
@@ -247,7 +263,7 @@ exports.removeFollower = (req, res) => {
     .exec((err, result) => {
       if (err) {
         return res.status(400).json({
-          error: err
+          error: err,
         });
       }
       result.hashed_password = undefined;
@@ -263,7 +279,7 @@ exports.findPeople = (req, res) => {
   User.find({ _id: { $nin: following } }, (err, users) => {
     if (err) {
       return res.status(400).json({
-        error: err
+        error: err,
       });
     }
     res.json(users);
