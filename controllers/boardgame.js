@@ -10,7 +10,7 @@ exports.findUserById = (req, res, next, id) => {
   //console.log("find user by id: ", id);
   //.exec will either get error or user info
   User.findById(id)
-    .populate("games")
+  .populate("boardgames.boardgame", "_id bbgId title")
     .exec((err, user) => {
       if (err || !user) {
         return res.status(400).json({
