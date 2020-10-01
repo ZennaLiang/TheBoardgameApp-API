@@ -137,6 +137,8 @@ exports.getBggBoardgames = (req, res) => {
 };
 
 exports.getUserCollection = (req, res) => {
+  req.profile.salt = undefined;
+  req.profile.hashed_password = undefined;
   return res.json(req.profile);
 };
 exports.getUserBggBoardgames = (req, res) => {
