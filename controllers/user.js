@@ -187,6 +187,8 @@ function processNewBoardgameStats(bgItem, boardgameInfo) {
 exports.updateBggUsername = (req, res) => {
   let user = req.profile;
   user.updated = Date.now();
+  user.salt = undefined; //not to be sent
+  user.hashed_password = undefined;
   const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
   if (req.body.counter === undefined) {
     req.body.counter = 0;
@@ -236,6 +238,7 @@ exports.updateBggUsername = (req, res) => {
             });
           }
         });
+
         res.status(200).json({ user });
       } else if (response.status === 202) {
         console.log("status", response.status);

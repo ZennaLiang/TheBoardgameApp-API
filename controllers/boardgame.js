@@ -10,7 +10,7 @@ exports.findUserById = (req, res, next, id) => {
   //console.log("find user by id: ", id);
   //.exec will either get error or user info
   User.findById(id)
-  .populate("boardgames.boardgame", "_id bggId title")
+    .populate("boardgames.boardgame", "_id bggId title")
     .exec((err, user) => {
       if (err || !user) {
         return res.status(400).json({
@@ -137,6 +137,8 @@ exports.getBggBoardgames = (req, res) => {
 };
 
 exports.getUserCollection = (req, res) => {
+  req.profile.salt = undefined;
+  req.profile.hashed_password = undefined;
   return res.json(req.profile);
 };
 exports.getUserBggBoardgames = (req, res) => {
