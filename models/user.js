@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema(
     },
     boardgames: [
       {
-        bggId: { type: String, unique: true, ref: "Boardgame" },
+        boardgame: { type: ObjectId, ref: "Boardgame" },
         notes: String,
         forTrade: Boolean,
         forSale: Boolean,
@@ -88,11 +88,6 @@ userSchema
     return this._password;
   });
 
-userSchema.virtual("games", {
-  ref: "Boardgame",
-  localField: "boardgames.bggId",
-  foreignField: "bggId",
-});
 /**************************************************************************
  **************************************************************************
  ***************************       methods       **************************
