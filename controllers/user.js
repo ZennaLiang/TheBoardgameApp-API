@@ -12,6 +12,7 @@ exports.findUserById = (req, res, next, id) => {
     // populate followers and following users array
     .populate("following", "_id name") // with just name and id
     .populate("followers", "_id name")
+    .populate("boardgames.boardgame", "_id bbgId title")
     .exec((err, user) => {
       if (err || !user) {
         return res.status(400).json({
@@ -101,19 +102,83 @@ async function fetchCollection(url) {
 
 // helper fxn to process bggeek format to be use
 function processBggBoardgame(bgItem) {
-  let stats = bgItem.status[0].$;
+  let bgStats = bgItem.status[0].$;
   let bg = {
     bggId: bgItem.$.objectid,
-    forTade: stats.fortrade === "1",
-    wantFromTrade: stats.want === "1",
-    wantFromBuy: stats.wanttobuy === "1",
-    wantToPlay: stats.wanttoplay === "1",
+    title: bgItem.name[0]._ === undefined ? "Missing Name" : bgItem.name[0]._,
+
+    imgThumbnail: bgItem.thumbnail === undefined ? "" : bgItem.thumbnail[0],
+
+    avgRating:
+      bgItem.stats[0] === undefined ||
+      isNaN(bgItem.stats[0].rating[0].average[0].$.value)
+        ? "N/A"
+        : bgItem.stats[0].rating[0].average[0].$.value,
+
+    yearPublished:
+      bgItem.yearpublished === undefined || isNaN(bgItem.yearpublished[0])
+        ? -1
+        : bgItem.yearpublished[0],
+
+    minPlayers:
+      bgItem.stats[0] === undefined || isNaN(bgStats.minplayers)
+        ? -1
+        : bgStats.minplayers,
+
+    maxPlayers:
+      bgItem.stats[0] === undefined || isNaN(bgStats.maxplayers)
+        ? -1
+        : bgStats.maxplayers,
+
+    minPlayTime:
+      bgItem.stats[0] === undefined || isNaN(bgStats.minplaytime)
+        ? -1
+        : bgStats.minplaytime,
+
+    maxPlayTime:
+      bgItem.stats[0] === undefined || isNaN(bgStats.maxplaytime)
+        ? -1
+        : bgStats.maxplaytime,
+    forTade: bgItem.status[0].$.fortrade === "1",
+    wantFromTrade: bgStats.want === "1",
+    wantFromBuy: bgStats.wanttobuy === "1",
+    wantToPlay: bgStats.wanttoplay === "1",
     notes: bgItem.comment === undefined ? "" : bgItem.comment[0],
     numOfPlay: bgItem.numplays[0],
   };
   return bg;
 }
 
+function processNewBoardgame(bgItem) {
+  let newBoardgame = {
+    bggId: bgItem.bggId,
+    title: bgItem.title,
+    imgThumbnail: bgItem.imgThumbnail,
+    avgRating: bgItem.avgRating,
+    yearPublished: bgItem.yearPublished,
+    minPlayers: bgItem.minPlayers,
+    maxPlayers: bgItem.maxPlayers,
+    minPlayTime: bgItem.minPlayTime,
+    maxPlayTime: bgItem.maxPlayTime,
+  };
+  return newBoardgame;
+}
+
+function processNewBoardgameStats(bgItem, boardgameInfo) {
+  // console.log(boardgameInfo);
+  let userBgStats = {
+    boardgame: boardgameInfo._id,
+    forTrade: bgItem.forTade,
+    forSale: false,
+    wantFromTrade: bgItem.wantFromTrade,
+    wantFromBuy: bgItem.wantFromBuy,
+    wantToPlay: bgItem.wantToPlay,
+    numOfPlay: bgItem.numOfPlay,
+    notes: bgItem.notes,
+  };
+  //console.log(userBgStats);
+  return userBgStats;
+}
 // set boardgamegeek username and sync collection to bgguru
 // get collection, format it, then check if each exist within user collection
 // add if not exist, update if it does
@@ -145,28 +210,29 @@ exports.updateBggUsername = (req, res) => {
               let boardgame = processBggBoardgame(bgItem);
               boardgames.push(boardgame);
             });
+
             boardgames.forEach(async (bgItem) => {
-              let bg = user.boardgames.find(
-                (boardgame) => boardgame.bggId === bgItem.bggId
+              let newBg = processNewBoardgame(bgItem);
+              let foundBoardgame = await Boardgame.findOneAndUpdate(
+                { bggId: newBg.bggId },
+                newBg,
+                { upsert: true }
               );
-              if (bg === undefined) {
-                user.boardgames.push(bgItem);
-              } else {
-                bg.forTrade = bgItem.forTade;
-                bg.forSale = bgItem.forSale;
-                bg.wantFromTrade = bgItem.wantFromTrade;
-                bg.wantFromBuy = bgItem.wantFromBuy;
-                bg.wantToPlay = bgItem.wantToPlay;
-                bg.numOfPlay = bgItem.numOfPlay;
-                bg.notes = bgItem.notes;
+              let foundBg = user.boardgames.find(
+                (bg) => bg.boardgame === foundBoardgame._id
+              );
+
+              if (foundBg === undefined) {
+                let newBgStat = processNewBoardgameStats(
+                  bgItem,
+                  foundBoardgame
+                );
+                await User.findByIdAndUpdate(
+                  user._id,
+                  { $push: { boardgames: newBgStat } },
+                  { new: true }
+                );
               }
-            });
-            user.save((err, result) => {
-              if (err) {
-                console.log(err);
-              }
-              user.hashed_password = undefined;
-              user.salt = undefined;
             });
           }
         });
