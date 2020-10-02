@@ -2,6 +2,7 @@ const express = require("express");
 
 const { requireSignIn } = require("../controllers/auth");
 const { 
+    findUserByName,
     findUserById, 
     findAllUsers, 
     getUser, 
@@ -19,7 +20,7 @@ const {
 
 
 const router = express.Router();
-
+router.get("/user/find/:username",findUserByName)
 router.get("/users", findAllUsers);
 router.put("/user/bgg/:bggUsername&:userId",requireSignIn,hasAuthorization, updateBggUsername);
 // follow/unfollow must be above the rest
@@ -36,5 +37,6 @@ router.get("/user/findpeople/:userId", requireSignIn, findPeople);
 
 // any route containing :userId, our app will first execute userByID()
 router.param("userId", findUserById);
+
 
 module.exports = router;

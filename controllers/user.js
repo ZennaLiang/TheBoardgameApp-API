@@ -5,6 +5,22 @@ const axios = require("axios");
 const User = require("../models/user");
 const XML2JS = require("xml2js");
 const Boardgame = require("../models/boardgame");
+
+exports.findUserByName = (req,res) =>{
+  var guruName = req.params.username;
+
+  User.findOne({name : guruName})
+  .exec((err, user) => {
+    if (err || !user) {
+      return res.status(400).json({
+        error: "User not found",
+      });
+    }else{
+      return res.status(200).json({user});
+    }
+
+  });
+}
 exports.findUserById = (req, res, next, id) => {
   //console.log("find user by id: ", id);
   //.exec will either get error or user info
