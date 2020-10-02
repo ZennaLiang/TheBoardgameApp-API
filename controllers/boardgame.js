@@ -12,7 +12,7 @@ exports.findUserById = (req, res, next, id) => {
   User.findById(id)
     .populate(
       "boardgames.boardgame",
-      "_id bggId title minPlayers maxPlayers minPlayTime maxPlayTime imgThumbnail avgRating"
+      "_id bggId title yearPublished minPlayers maxPlayers minPlayTime maxPlayTime imgThumbnail avgRating"
     )
     .exec((err, user) => {
       if (err || !user) {
