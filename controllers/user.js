@@ -6,21 +6,19 @@ const User = require("../models/user");
 const XML2JS = require("xml2js");
 const Boardgame = require("../models/boardgame");
 
-exports.findUserByName = (req,res) =>{
+exports.findUserByName = (req, res) => {
   var guruName = req.params.username;
 
-  User.findOne({name : guruName})
-  .exec((err, user) => {
+  User.findOne({ name: guruName }).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
         error: "User not found",
       });
-    }else{
-      return res.status(200).json({user});
+    } else {
+      return res.status(200).json({ user });
     }
-
   });
-}
+};
 exports.findUserById = (req, res, next, id) => {
   //console.log("find user by id: ", id);
   //.exec will either get error or user info
@@ -119,6 +117,7 @@ async function fetchCollection(url) {
 // helper fxn to process bggeek format to be use
 function processBggBoardgame(bgItem) {
   let bgStats = bgItem.status[0].$;
+  let boardgameInfo = bgItem.stats[0].$;
   let bg = {
     bggId: bgItem.$.objectid,
     title: bgItem.name[0]._ === undefined ? "Missing Name" : bgItem.name[0]._,
@@ -137,31 +136,32 @@ function processBggBoardgame(bgItem) {
         : bgItem.yearpublished[0],
 
     minPlayers:
-      bgItem.stats[0] === undefined || isNaN(bgStats.minplayers)
+      bgItem.stats[0] === undefined || isNaN(boardgameInfo.minplayers)
         ? -1
-        : bgStats.minplayers,
+        : boardgameInfo.minplayers,
 
     maxPlayers:
-      bgItem.stats[0] === undefined || isNaN(bgStats.maxplayers)
+      bgItem.stats[0] === undefined || isNaN(boardgameInfo.maxplayers)
         ? -1
-        : bgStats.maxplayers,
+        : boardgameInfo.maxplayers,
 
     minPlayTime:
-      bgItem.stats[0] === undefined || isNaN(bgStats.minplaytime)
+      bgItem.stats[0] === undefined || isNaN(boardgameInfo.minplaytime)
         ? -1
-        : bgStats.minplaytime,
+        : boardgameInfo.minplaytime,
 
     maxPlayTime:
-      bgItem.stats[0] === undefined || isNaN(bgStats.maxplaytime)
+      bgItem.stats[0] === undefined || isNaN(boardgameInfo.maxplaytime)
         ? -1
-        : bgStats.maxplaytime,
-    forTade: bgItem.status[0].$.fortrade === "1",
+        : boardgameInfo.maxplaytime,
+    forTade: bgStats.fortrade === "1",
     wantFromTrade: bgStats.want === "1",
     wantFromBuy: bgStats.wanttobuy === "1",
     wantToPlay: bgStats.wanttoplay === "1",
     notes: bgItem.comment === undefined ? "" : bgItem.comment[0],
     numOfPlay: bgItem.numplays[0],
   };
+
   return bg;
 }
 
