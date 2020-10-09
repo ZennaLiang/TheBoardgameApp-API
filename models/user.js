@@ -50,10 +50,9 @@ const userSchema = new mongoose.Schema(
     },
     boardgames: [
       {
-        boardgame: { type: ObjectId, ref: "Boardgame" },
+        boardgame: { type: ObjectId, ref: "Boardgame", unique: true },
         notes: String,
         forTrade: Boolean,
-        forSale: Boolean,
         wantFromTrade: Boolean,
         wantFromBuy: Boolean,
         wantToPlay: Boolean,
