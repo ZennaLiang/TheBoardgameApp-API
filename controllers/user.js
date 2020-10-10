@@ -154,7 +154,7 @@ function processBggBoardgame(bgItem) {
       bgItem.stats[0] === undefined || isNaN(boardgameInfo.maxplaytime)
         ? -1
         : boardgameInfo.maxplaytime,
-    forTade: bgStats.fortrade === "1",
+    forTrade: bgStats.fortrade === "1",
     wantFromTrade: bgStats.want === "1",
     wantFromBuy: bgStats.wanttobuy === "1",
     wantToPlay: bgStats.wanttoplay === "1",
@@ -181,18 +181,16 @@ function processNewBoardgame(bgItem) {
 }
 
 function processNewBoardgameStats(bgItem, boardgameInfo) {
-  // console.log(boardgameInfo);
   let userBgStats = {
     boardgame: boardgameInfo._id,
-    forTrade: bgItem.forTade,
-    forSale: false,
+    forTrade: bgItem.forTrade,
     wantFromTrade: bgItem.wantFromTrade,
     wantFromBuy: bgItem.wantFromBuy,
     wantToPlay: bgItem.wantToPlay,
     numOfPlay: bgItem.numOfPlay,
     notes: bgItem.notes,
   };
-  //console.log(userBgStats);
+
   return userBgStats;
 }
 // set boardgamegeek username and sync collection to bgguru
@@ -230,17 +228,42 @@ exports.updateBggUsername = (req, res) => {
             });
 
             boardgames.forEach(async (bgItem) => {
+              // add if bg not in database
+              // update boardgame info if it's there
               let newBg = processNewBoardgame(bgItem);
               let foundBoardgame = await Boardgame.findOneAndUpdate(
                 { bggId: newBg.bggId },
                 newBg,
                 { upsert: true }
               );
-              let foundBg = user.boardgames.find(
-                (bg) => bg.boardgame === foundBoardgame._id
-              );
 
-              if (foundBg === undefined) {
+              // check if user already have the boardgame
+              let findUserBoardgame = user.boardgames.find(
+                (bg) =>
+                  bg.boardgame != undefined &&
+                  bg.boardgame._id == String(foundBoardgame._id)
+              );
+              // if bg found, update status from boardgamegeek to guru
+              if (findUserBoardgame !== undefined) {
+                findUserBoardgame.forTrade = bgItem.forTrade;
+                findUserBoardgame.wantFromTrade = bgItem.wantFromTrade;
+                findUserBoardgame.wantFromBuy = bgItem.wantFromBuy;
+                findUserBoardgame.wantToPlay = bgItem.wantToPlay;
+                findUserBoardgame.numOfPlay = bgItem.numOfPlay;
+                findUserBoardgame.notes = bgItem.notes;
+
+                let updated = await User.findOneAndUpdate(
+                  {
+                    _id: user._id,
+                    "boardgames.boardgame": foundBoardgame._id,
+                  },
+                  { $set: { "boardgames.$": findUserBoardgame } },
+                  {
+                    new: true,
+                  }
+                );
+              } else {
+                // otherwise, add the new game to user with stats
                 let newBgStat = processNewBoardgameStats(
                   bgItem,
                   foundBoardgame
@@ -248,7 +271,10 @@ exports.updateBggUsername = (req, res) => {
                 await User.findByIdAndUpdate(
                   user._id,
                   { $push: { boardgames: newBgStat } },
-                  { new: true }
+                  {
+                    upsert: true,
+                    new: true,
+                  }
                 );
               }
             });
@@ -257,7 +283,7 @@ exports.updateBggUsername = (req, res) => {
 
         res.status(200).json({ user });
       } else if (response.status === 202) {
-        console.log("status", response.status);
+        //console.log("status", response.status);
         setTimeout(() => {
           this.updateBggUsername(req, res);
         }, 5000);
@@ -289,7 +315,7 @@ exports.getUserPhoto = (req, res, next) => {
 };
 
 exports.addFollowing = (req, res, next) => {
-  console.log("request body userID: ", req.body.userId);
+  //console.log("request body userID: ", req.body.userId);
   User.findByIdAndUpdate(
     // mongo fxn to find and update
     req.body.userId,
