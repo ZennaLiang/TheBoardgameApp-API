@@ -13,16 +13,36 @@ const tradeRequestSchema = new mongoose.Schema({
     },
 
     tradeOffer: [{
-        bggId: { 
+        id: { 
             type: String, 
-            ref: "Boardgame", 
-            unique: true }}],
+            ref: "Boardgame" },
+        name:{
+            type: String
+        },
+        condition:{
+            type: String,
+            enum: ['Excellent','Good','Fair','Poor']
+        },
+        price:{
+            type: Number
+        }
+        }],
 
     tradeWants: [{
-        bggId: { 
+        id: { 
             type: String, 
-            ref: "Boardgame", 
-            unique: true }}],
+            ref: "Boardgame" },
+        name:{
+            type: String
+        },
+        condition:{
+            type: String,
+            enum: ['Excellent','Good','Fair','Poor']
+        },
+        price:{
+            type: Number
+        }
+        }],
     
     notes: {
         type: String,
@@ -37,4 +57,4 @@ const tradeRequestSchema = new mongoose.Schema({
    
 });
 
-module.exports = mongoose.model("TradeRequest", tradeRequestSchema);
+module.exports = mongoose.model("Trades", tradeRequestSchema);
