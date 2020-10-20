@@ -27,7 +27,7 @@ exports.findUserById = (req, res, next, id) => {
     });
 };
 exports.findBgByUsername = (req, res, next, id) => {
-  console.log("Find bg by id", id);
+  //console.log("Find bg by id", id);
   fetch(
     `https://www.boardgamegeek.com/xmlapi2/collection?username=ZennaL&subtype=boardgame&own=0`
   )
@@ -143,6 +143,7 @@ exports.getBggBoardgames = (req, res) => {
 exports.getUserCollection = (req, res) => {
   req.profile.salt = undefined;
   req.profile.hashed_password = undefined;
+
   return res.json(req.profile.boardgames);
 };
 exports.getUserBggBoardgames = (req, res) => {
@@ -190,7 +191,7 @@ exports.getUserBggBoardgames = (req, res) => {
 };
 
 exports.getBGGCounts = async (req, res) => {
-  console.log("here:", req.params.username);
+  //console.log("here:", req.params.username);
   const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&own=0&stats=1`;
   await fetchCollection(url)
     .then((response) => {
@@ -211,7 +212,7 @@ exports.getBGGCounts = async (req, res) => {
 };
 
 exports.checkBggAccountExist = async (req, res, next) => {
-  console.log("here:", req.params.bggUsername);
+  // console.log("here:", req.params.bggUsername);
   const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
   await fetchCollection(url)
     .then((response) => {
