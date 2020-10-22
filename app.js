@@ -33,6 +33,7 @@ const eventRoutes = require("./routes/event");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const boardgameRoutes = require("./routes/boardgame");
+const tradeRoutes = require("./routes/trade");
 
 /**************************************************************************
  **************************         API DOC         ************************
@@ -50,20 +51,23 @@ app.get("/api", (req, res) => {
 });
 
 /**************************************************************************
- **************************       Middleware       ************************
- **************************************************************************/
-app.use(morgan("dev"));
+**************************       Middleware       ************************
+**************************************************************************/
+app.use(morgan('dev'));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(expressValidator());
 app.use(cors());
-app.use("/api", postRoutes);
-app.use("/api", authRoutes);
-app.use("/api", eventRoutes);
-app.use("/api", userRoutes);
-app.use("/api", boardgameRoutes);
 
-// show error when user try to access web without authorization
+app.use('/api', postRoutes);
+app.use('/api', authRoutes);
+app.use('/api', userRoutes);
+app.use('/api', boardgameRoutes);
+app.use('/api', tradeRoutes);
+app.use("/api", eventRoutes);
+// show error when user try to access web without authorization  
+
 app.use(function (err, req, res, next) {
   if (err.name === "UnauthorizedError") {
     res.status(401).json({ error: "Unauthorized Access!" });

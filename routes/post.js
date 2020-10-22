@@ -23,7 +23,7 @@ const router = express.Router();
 
 router.get("/posts", getPosts);
 router.get("/post/:postId", getPost);
-
+router.get("/posts/by/:userId", requireSignIn, postsByUser);
 // like unlike
 router.put("/post/like", requireSignIn, likePost);
 router.put("/post/unlike", requireSignIn, unlikePost);
