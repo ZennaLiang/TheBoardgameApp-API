@@ -123,6 +123,7 @@ exports.signOut = (req, res) => {
 // make sure user is signed in with a token
 exports.requireSignIn = expressJwt({
     secret: process.env.JWT_SECRET,
+    algorithms: ['HS256'],
     userProperty: "auth"
 });
 
