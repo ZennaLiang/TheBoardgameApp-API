@@ -1,10 +1,10 @@
 const Trade = require("../models/tradeRequest");
 const mongoose = require('mongoose');
 
-exports.createTrade = (req, res) => {
+exports.createTrade = async (req, res) => {
 
   try {
-    Trade.create({
+    await Trade.create({
       tradeSender: new mongoose.Types.ObjectId(req.body.userID),
       tradeReceiver: new mongoose.Types.ObjectId(req.body.searchedUserID),
       tradeOffer: req.body.userTradeList,
@@ -26,8 +26,52 @@ exports.createTrade = (req, res) => {
 
 };
 
-exports.getAllTrades = (req, res) => {
+exports.getAllTrades = async (req, res) => {
 
+ // return 5 trades per page use' .limit(perPage)
+ const perPage = 5;
+ let totalItems;
+
+ const trades = await Trade.find()
+     // countDocuments() gives you total count of trades
+     .countDocuments()
+     .then(count => {
+         totalItems = count;
+         return Trade.find()
+             .populate("tradeSender", "_id name")
+             .populate("tradeReceiver", "_id name")
+             .select("tradeOffer tradeWants"); 
+     })
+     .then(trades => {
+         res.status(200).json(trades);
+     })
+     .catch(err => console.log(err));
 
 
 }
+
+
+exports.getTradesById = async (req, res) => {
+  const userId = req.params.userId;
+  // return 5 trades per page use' .limit(perPage)
+  const perPage = 5;
+  let totalItems;
+  
+ 
+  const trades = await Trade.find({$or : [{tradeSender: userId}, {tradeReceiver: userId}]})
+      // countDocuments() gives you total count of trades
+      .countDocuments()
+      .then(count => {
+          totalItems = count;
+          return Trade.find()
+              .populate("tradeSender", "_id name")
+              .populate("tradeReceiver", "_id name")
+              .select("tradeOffer tradeWants"); 
+      })
+      .then(trades => {
+          res.status(200).json(trades);
+      })
+      .catch(err => console.log(err));
+ 
+ 
+ }
