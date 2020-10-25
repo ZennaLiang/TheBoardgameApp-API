@@ -55,13 +55,9 @@ exports.eventsByUser = (req, res) => {
     });
 };
 
-exports.createEvent = (req, res) => {
-  //console.log("creating new event");
-  const event = new Event(req.body);
-  req.profile.hashed_password = undefined;
-  req.profile.salt = undefined;
-  event.owner = req.profile;
-  event.save((err, result) => {
+exports.createEvent = async (req, res) => {
+  const event = await new Event(req.body);
+  await event.save((err, result) => {
     if (err) {
       return res.status(400).json({
         error: err,
