@@ -28,7 +28,7 @@ exports.createTrade = async (req, res) => {
 
 exports.getAllTrades = async (req, res) => {
 
- // return 5 trades per page
+ // return 5 trades per page use' .limit(perPage)
  const perPage = 5;
  let totalItems;
 
@@ -40,7 +40,6 @@ exports.getAllTrades = async (req, res) => {
          return Trade.find()
              .populate("tradeSender", "_id name")
              .populate("tradeReceiver", "_id name")
-             .limit(perPage)
              .select("tradeOffer tradeWants"); 
      })
      .then(trades => {
@@ -50,3 +49,29 @@ exports.getAllTrades = async (req, res) => {
 
 
 }
+
+
+exports.getTradesById = async (req, res) => {
+  const userId = req.params.userId;
+  // return 5 trades per page use' .limit(perPage)
+  const perPage = 5;
+  let totalItems;
+  
+ 
+  const trades = await Trade.find({$or : [{tradeSender: userId}, {tradeReceiver: userId}]})
+      // countDocuments() gives you total count of trades
+      .countDocuments()
+      .then(count => {
+          totalItems = count;
+          return Trade.find()
+              .populate("tradeSender", "_id name")
+              .populate("tradeReceiver", "_id name")
+              .select("tradeOffer tradeWants"); 
+      })
+      .then(trades => {
+          res.status(200).json(trades);
+      })
+      .catch(err => console.log(err));
+ 
+ 
+ }
