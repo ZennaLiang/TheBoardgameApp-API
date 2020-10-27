@@ -7,7 +7,6 @@ const User = require("../models/user");
 
 const Boardgame = require("../models/boardgame");
 exports.findUserById = (req, res, next, id) => {
-  //console.log("find user by id: ", id);
   //.exec will either get error or user info
   User.findById(id)
     .populate(
@@ -20,21 +19,17 @@ exports.findUserById = (req, res, next, id) => {
           error: "User not found",
         });
       }
-      //console.log(user.games);
       req.profile = user; // adds profile object in req with user info
-      //console.log(req.profile.games);
+
       next();
     });
 };
 exports.findBgByUsername = (req, res, next, id) => {
-  //console.log("Find bg by id", id);
   fetch(
     `https://www.boardgamegeek.com/xmlapi2/collection?username=ZennaL&subtype=boardgame&own=0`
   )
     .then((response) => response.text())
-    .then((data) => {
-      console.log("data: ", data);
-    });
+    .then((data) => {});
   next();
 };
 
@@ -52,7 +47,6 @@ async function fetchCollection(url) {
 }
 
 function processBggBoardgame(bgItem) {
-  console.log(bgItem);
   let boardgame = {
     bggId: bgItem.$.objectid,
 
@@ -116,7 +110,6 @@ exports.getBggBoardgames = (req, res) => {
           if (result.items.$.totalitems !== "0") {
             result.items.item.forEach((bgItem) => {
               let boardgame = processBggBoardgame(bgItem);
-              //console.log("bgid: ", boardgame)
               boardgames.push(boardgame);
             });
             boardgames.forEach(async (bgItem) => {
@@ -191,14 +184,11 @@ exports.getUserBggBoardgames = (req, res) => {
 };
 
 exports.getBGGCounts = async (req, res) => {
-  //console.log("here:", req.params.username);
   const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&own=0&stats=1`;
   await fetchCollection(url)
     .then((response) => {
-      console.log("got response from collection");
       if (response.status === 200) {
         let xml = XML2JS.parseString(response.data, (err, result) => {
-          // console.log(result.items);
           if (result.errors) {
             return res.status(404).json({ error: "Username not found" });
           }
@@ -212,14 +202,11 @@ exports.getBGGCounts = async (req, res) => {
 };
 
 exports.checkBggAccountExist = async (req, res, next) => {
-  // console.log("here:", req.params.bggUsername);
   const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
   await fetchCollection(url)
     .then((response) => {
-      console.log("got response from collection");
       if (response.status === 200) {
         let xml = XML2JS.parseString(response.data, (err, result) => {
-          // console.log(result.items);
           if (result.errors) {
             return res.status(404).json({
               error: `Username: ${req.params.bggUsername} not found. Please enter correct information.`,

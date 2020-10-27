@@ -6,7 +6,6 @@ const Event = require("../models/event");
 const User = require("../models/user");
 
 exports.findUserById = (req, res, next, id) => {
-  //console.log("find user by id: ", id);
   //.exec will either get error or user info
   User.findById(id)
     .populate("boardgames")

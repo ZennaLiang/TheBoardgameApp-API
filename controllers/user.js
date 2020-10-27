@@ -20,7 +20,6 @@ exports.findUserByName = (req, res) => {
   });
 };
 exports.findUserById = (req, res, next, id) => {
-  //console.log("find user by id: ", id);
   //.exec will either get error or user info
   User.findById(id)
     // populate followers and following users array
@@ -283,7 +282,6 @@ exports.updateBggUsername = (req, res) => {
 
         res.status(200).json({ user });
       } else if (response.status === 202) {
-        //console.log("status", response.status);
         setTimeout(() => {
           this.updateBggUsername(req, res);
         }, 5000);
@@ -315,7 +313,6 @@ exports.getUserPhoto = (req, res, next) => {
 };
 
 exports.addFollowing = (req, res, next) => {
-  //console.log("request body userID: ", req.body.userId);
   User.findByIdAndUpdate(
     // mongo fxn to find and update
     req.body.userId,
