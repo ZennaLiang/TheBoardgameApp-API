@@ -42,6 +42,15 @@ exports.getAllTrades = async (req, res) => {
     .catch(err => console.log(err));
 };
 
+exports.getTradeById = async (req, res) => {
+  const tradeId = req.params.tradeId;
+  const trade = await Trade.findById(tradeId)
+    .then(data => {
+      res.status(200).json(data);
+    })
+    .catch(err => console.log(err));
+};
+
 exports.getTradesById = async (req, res) => {
   const userId = req.params.userId;
   // return 5 trades per page use' .limit(perPage)
