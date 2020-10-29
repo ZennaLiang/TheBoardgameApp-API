@@ -34,10 +34,21 @@ exports.getAllTrades = async (req, res) => {
       return Trade.find()
         .populate("tradeSender", "_id name")
         .populate("tradeReceiver", "_id name")
-        .select("tradeOffer tradeWants");
+        .select("tradeOffer tradeWants notes createdDate");
     })
     .then(trades => {
       res.status(200).json(trades);
+    })
+    .catch(err => console.log(err));
+};
+
+exports.getTradeById = async (req, res) => {
+  const tradeId = req.params.tradeId;
+  const trade = await Trade.findById(tradeId)
+    .populate("tradeSender", "_id name")
+    .populate("tradeReceiver", "_id name")
+    .then(data => {
+      res.status(200).json(data);
     })
     .catch(err => console.log(err));
 };
@@ -58,7 +69,7 @@ exports.getTradesById = async (req, res) => {
       return Trade.find()
         .populate("tradeSender", "_id name")
         .populate("tradeReceiver", "_id name")
-        .select("tradeOffer tradeWants");
+        .select("tradeOffer tradeWants notes createdDate");
     })
     .then(trades => {
       res.status(200).json(trades);
