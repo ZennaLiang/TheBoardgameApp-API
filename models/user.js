@@ -57,6 +57,11 @@ const userSchema = new mongoose.Schema(
         wantFromBuy: Boolean,
         wantToPlay: Boolean,
         numOfPlay: Number,
+        price: Number,
+        condition:{
+          type: String,
+          enum: ['Excellent','Good','Fair','Poor']
+      }
       },
     ],
   },
