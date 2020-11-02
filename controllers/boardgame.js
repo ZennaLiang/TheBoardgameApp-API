@@ -226,12 +226,21 @@ exports.checkBggAccountExist = async (req, res, next) => {
 
 exports.updateUserCollection = async (req, res) => {
   let id = req.params.userId;
-  console.log(id)
-  console.log(req.body);
-  await User.update(
-    { "_id": id, "boardgames._id": req.body._id },
-    { "$set" : {"boardgames.$.condition": req.body.condition,"boardgames.$.price":req.body.price} }
+
+ await req.body.forEach(boardgame =>{
+ User.update(
+    { "_id": id, "boardgames._id": boardgame._id },
+    { "$set" : {"boardgames.$.condition": boardgame.condition,"boardgames.$.price":boardgame.price} }
   ).then(response => {
-    return console.log(response);
+    if(response.ok){
+      return 0;
+    }else{
+      throw response.text;
+    }
+
   }).catch(err => console.log(err));
+
+
+  })
+  
 };
