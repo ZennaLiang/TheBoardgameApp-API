@@ -200,8 +200,7 @@ function processNewBoardgameStats(bgItem, boardgameInfo) {
 exports.updateBggUsername = (req, res) => {
   let user = req.profile;
   user.updated = Date.now();
-  user.salt = undefined; //not to be sent
-  user.hashed_password = undefined;
+
   const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
   if (req.body.counter === undefined) {
     req.body.counter = 0;
@@ -212,6 +211,7 @@ exports.updateBggUsername = (req, res) => {
     return res.status(419).json({ error: "Collection too large" });
   }
   user.bggUsername = req.params.bggUsername;
+
   fetchCollection(url)
     .then((response) => {
       if (response.status === 200) {
@@ -279,8 +279,6 @@ exports.updateBggUsername = (req, res) => {
             });
           }
         });
-
-        res.status(200).json({ user });
       } else if (response.status === 202) {
         setTimeout(() => {
           this.updateBggUsername(req, res);
@@ -290,6 +288,17 @@ exports.updateBggUsername = (req, res) => {
     .catch((err) => {
       return res.status(404).json({ error: "Error fetching data." });
     });
+  user.save((err, result) => {
+    if (err) {
+      return res.status(400).json({
+        error: err,
+      });
+    }
+    // so these don't get pass to the front end
+    user.hashed_password = undefined;
+    user.salt = undefined;
+    res.status(200).json({ user });
+  });
 };
 
 exports.deleteUser = (req, res, next) => {
