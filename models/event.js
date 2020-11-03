@@ -19,6 +19,8 @@ const eventSchema = new mongoose.Schema({
   allDay: {
     type: Boolean,
   },
+  invitees: [{ type: ObjectId, ref: "User" }],
+  boardgames: [{ type: ObjectId, ref: "Boardgame" }],
   owner: {
     type: ObjectId,
     ref: "User",
