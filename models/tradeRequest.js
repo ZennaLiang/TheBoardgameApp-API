@@ -21,7 +21,8 @@ const tradeRequestSchema = new mongoose.Schema({
         },
         condition:{
             type: String,
-            enum: ['Excellent','Good','Fair','Poor']
+            enum: ['Excellent','Good','Fair','Poor','N/A'],
+            default:'N/A'
         },
         price:{
             type: Number
@@ -37,7 +38,8 @@ const tradeRequestSchema = new mongoose.Schema({
         },
         condition:{
             type: String,
-            enum: ['Excellent','Good','Fair','Poor']
+            enum: ['Excellent','Good','Fair','Poor','N/A'],
+            default:'N/A'
         },
         price:{
             type: Number
@@ -47,6 +49,12 @@ const tradeRequestSchema = new mongoose.Schema({
     notes: {
         type: String,
         required: true
+    },
+    status:{
+        type: String,
+        enum:['Open', 'Closed', 'Pending'],
+        required: true,
+        default:'Open'
     },
 
     createdDate: {

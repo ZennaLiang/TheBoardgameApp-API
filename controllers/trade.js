@@ -84,3 +84,17 @@ exports.deleteTrade = (req, res) => {
     console.log("Successful deletion");
   });
 };
+
+exports.updateTradeStatus = (req, res) => {
+  let tradeId = req.params.tradeId;
+  console.log(req.body);
+  let status = req.body.status;
+  console.log(status);
+  Trade.updateOne({_id: tradeId}, { status: status }, function(err, result) {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+};
