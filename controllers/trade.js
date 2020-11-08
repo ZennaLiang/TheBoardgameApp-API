@@ -69,7 +69,7 @@ exports.getTradesById = async (req, res) => {
       return Trade.find()
         .populate("tradeSender", "_id name")
         .populate("tradeReceiver", "_id name")
-        .select("tradeOffer tradeWants notes createdDate");
+        .select("tradeOffer tradeWants status notes createdDate");
     })
     .then(trades => {
       res.status(200).json(trades);
@@ -82,5 +82,19 @@ exports.deleteTrade = (req, res) => {
   Trade.findByIdAndDelete(tradeId, function(err) {
     if (err) console.log(err);
     console.log("Successful deletion");
+  });
+};
+
+exports.updateTradeStatus = (req, res) => {
+  let tradeId = req.params.tradeId;
+  console.log(req.body);
+  let status = req.body.status;
+  console.log(status);
+  Trade.updateOne({_id: tradeId}, { status: status }, function(err, result) {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
   });
 };

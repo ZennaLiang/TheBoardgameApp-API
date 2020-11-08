@@ -6,7 +6,8 @@ const {
     getAllTrades,
     getTradeById,
     getTradesById,
-    deleteTrade
+    deleteTrade,
+    updateTradeStatus
 } = require("../controllers/trade");
 
 const router = express.Router();
@@ -16,6 +17,7 @@ router.get("/trades/by/:userId", getTradesById);
 router.get("/trade/by/:tradeId", getTradeById);
 router.post("/trade/requestTrade",createTrade);
 router.delete("/trade/delete/:tradeId",  requireSignIn, deleteTrade);
+router.put("/trade/update/:tradeId",requireSignIn, updateTradeStatus)
 
 
 
