@@ -69,7 +69,7 @@ exports.getTradesById = async (req, res) => {
       return Trade.find()
         .populate("tradeSender", "_id name")
         .populate("tradeReceiver", "_id name")
-        .select("tradeOffer tradeWants notes createdDate");
+        .select("tradeOffer tradeWants status notes createdDate");
     })
     .then(trades => {
       res.status(200).json(trades);
