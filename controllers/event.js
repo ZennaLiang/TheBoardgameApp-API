@@ -40,6 +40,7 @@ exports.findEventById = (req, res, next, id) => {
 exports.eventsByUser = (req, res) => {
   Event.find({ owner: req.profile._id })
     .populate("owner", "_id name")
+    .populate("boardgames", "_id title bggId")
     .select(
       "_id title description startDate endDate allDay bgColor createdDate"
     )
