@@ -19,13 +19,17 @@ exports.findUserByName = (req, res) => {
     }
   });
 };
+
 exports.findUserById = (req, res, next, id) => {
   //.exec will either get error or user info
   User.findById(id)
     // populate followers and following users array
     .populate("following", "_id name") // with just name and id
     .populate("followers", "_id name")
-    .populate("boardgames.boardgame", "_id bbgId title")
+    .populate(
+      "boardgames.boardgame",
+      "_id bggId title yearPublished minPlayers maxPlayers minPlayTime maxPlayTime imgThumbnail avgRating"
+    )
     .exec((err, user) => {
       if (err || !user) {
         return res.status(400).json({

@@ -16,20 +16,20 @@ exports.findUserById = (req, res, next, id) => {
     .exec((err, user) => {
       if (err || !user) {
         return res.status(400).json({
-          error: "User not found"
+          error: "User not found",
         });
       }
       req.profile = user; // adds profile object in req with user info
-
       next();
     });
 };
+
 exports.findBgByUsername = (req, res, next, id) => {
   fetch(
     `https://www.boardgamegeek.com/xmlapi2/collection?username=ZennaL&subtype=boardgame&own=0`
   )
-    .then(response => response.text())
-    .then(data => {});
+    .then((response) => response.text())
+    .then((data) => {});
   next();
 };
 
@@ -40,10 +40,10 @@ exports.getBoardgame = (req, res) => {
 async function fetchCollection(url) {
   return axios
     .get(url)
-    .then(response => {
+    .then((response) => {
       return response;
     })
-    .catch(err => console.log(err));
+    .catch((err) => console.log(err));
 }
 
 function processBggBoardgame(bgItem) {
@@ -83,7 +83,7 @@ function processBggBoardgame(bgItem) {
     maxPlayTime:
       bgItem.stats[0] === undefined || isNaN(bgItem.stats[0].$.maxplaytime)
         ? -1
-        : bgItem.stats[0].$.maxplaytime
+        : bgItem.stats[0].$.maxplaytime,
   };
   return boardgame;
 }
@@ -100,7 +100,7 @@ exports.getBggBoardgames = (req, res) => {
     return res.status(419).json({ error: "Collection too large" });
   }
   fetchCollection(url)
-    .then(response => {
+    .then((response) => {
       if (response.status === 200) {
         let boardgames = [];
         let xml = XML2JS.parseString(response.data, (err, result) => {
@@ -108,11 +108,11 @@ exports.getBggBoardgames = (req, res) => {
             return res.status(404).json({ error: "Username not found" });
           }
           if (result.items.$.totalitems !== "0") {
-            result.items.item.forEach(bgItem => {
+            result.items.item.forEach((bgItem) => {
               let boardgame = processBggBoardgame(bgItem);
               boardgames.push(boardgame);
             });
-            boardgames.forEach(async bgItem => {
+            boardgames.forEach(async (bgItem) => {
               await Boardgame.findOneAndUpdate(
                 { bggId: bgItem.bggId },
                 bgItem,
@@ -128,7 +128,7 @@ exports.getBggBoardgames = (req, res) => {
         }, 5000);
       }
     })
-    .catch(err => {
+    .catch((err) => {
       return res.status(404).json({ error: "Error fetching data." });
     });
 };
@@ -150,7 +150,7 @@ exports.getUserBggBoardgames = (req, res) => {
     return res.status(419).json({ error: "Collection too large" });
   }
   fetchCollection(url)
-    .then(response => {
+    .then((response) => {
       if (response.status === 200) {
         let boardgames = [];
         let xml = XML2JS.parseString(response.data, (err, result) => {
@@ -158,11 +158,11 @@ exports.getUserBggBoardgames = (req, res) => {
             return res.status(404).json({ error: "Username not found" });
           }
           if (result.items.$.totalitems !== "0") {
-            result.items.item.forEach(bgItem => {
+            result.items.item.forEach((bgItem) => {
               let boardgame = processBggBoardgame(bgItem);
               boardgames.push(boardgame);
             });
-            boardgames.forEach(async bgItem => {
+            boardgames.forEach(async (bgItem) => {
               await Boardgame.findOneAndUpdate(
                 { bggObjId: bgItem.bggObjId },
                 bgItem,
@@ -178,7 +178,7 @@ exports.getUserBggBoardgames = (req, res) => {
         }, 5000);
       }
     })
-    .catch(err => {
+    .catch((err) => {
       return res.status(404).json({ error: "Error fetching data." });
     });
 };
@@ -186,7 +186,7 @@ exports.getUserBggBoardgames = (req, res) => {
 exports.getBGGCounts = async (req, res) => {
   const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&own=0&stats=1`;
   await fetchCollection(url)
-    .then(response => {
+    .then((response) => {
       if (response.status === 200) {
         let xml = XML2JS.parseString(response.data, (err, result) => {
           if (result.errors) {
@@ -198,49 +198,52 @@ exports.getBGGCounts = async (req, res) => {
         });
       }
     })
-    .catch(err => console.log(err));
+    .catch((err) => console.log(err));
 };
 
 exports.checkBggAccountExist = async (req, res, next) => {
   const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
   await fetchCollection(url)
-    .then(response => {
+    .then((response) => {
       if (response.status === 200) {
         let xml = XML2JS.parseString(response.data, (err, result) => {
           if (result.errors) {
             return res.status(404).json({
-              error: `Username: ${req.params.bggUsername} not found. Please enter correct information.`
+              error: `Username: ${req.params.bggUsername} not found. Please enter correct information.`,
             });
           }
           if (result.items.$.totalitems === "0") {
             return res.status(404).json({
-              error: `Username: ${req.params.bggUsername} does not have a boardgame collection.`
+              error: `Username: ${req.params.bggUsername} does not have a boardgame collection.`,
             });
           }
         });
       }
     })
-    .catch(err => console.log(err));
+    .catch((err) => console.log(err));
   next();
 };
 
 exports.updateUserCollection = async (req, res) => {
   let id = req.params.userId;
 
- await req.body.forEach(boardgame =>{
- User.update(
-    { "_id": id, "boardgames._id": boardgame._id },
-    { "$set" : {"boardgames.$.condition": boardgame.condition,"boardgames.$.price":boardgame.price} }
-  ).then(response => {
-    if(response.ok){
-      return 0;
-    }else{
-      throw response.text;
-    }
-
-  }).catch(err => console.log(err));
-
-
-  })
-  
+  await req.body.forEach((boardgame) => {
+    User.update(
+      { _id: id, "boardgames._id": boardgame._id },
+      {
+        $set: {
+          "boardgames.$.condition": boardgame.condition,
+          "boardgames.$.price": boardgame.price,
+        },
+      }
+    )
+      .then((response) => {
+        if (response.ok) {
+          return 0;
+        } else {
+          throw response.text;
+        }
+      })
+      .catch((err) => console.log(err));
+  });
 };
