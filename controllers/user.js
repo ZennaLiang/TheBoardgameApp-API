@@ -26,6 +26,7 @@ exports.findUserById = (req, res, next, id) => {
     // populate followers and following users array
     .populate("following", "_id name") // with just name and id
     .populate("followers", "_id name")
+    .populate("friends", "_id name")
     .populate(
       "boardgames.boardgame",
       "_id bggId title yearPublished minPlayers maxPlayers minPlayTime maxPlayTime imgThumbnail avgRating"

@@ -3,25 +3,6 @@ const fs = require("fs"); // file system
 const _ = require("lodash");
 
 const Event = require("../models/event");
-const User = require("../models/user");
-
-exports.findUserById = (req, res, next, id) => {
-  //.exec will either get error or user info
-  User.findById(id)
-    .populate("boardgames")
-    .populate("boardgames.boardgame", "_id bbgId title")
-    .select("_id name")
-    .exec((err, user) => {
-      if (err || !user) {
-        return res.status(400).json({
-          error: "User not found",
-        });
-      }
-
-      req.profile = user; // adds profile object in req with user info
-      next();
-    });
-};
 
 exports.findEventById = (req, res, next, id) => {
   Event.findById(id)
