@@ -139,6 +139,7 @@ exports.getUserCollection = (req, res) => {
 
   return res.json(req.profile.boardgames);
 };
+
 exports.getUserBggBoardgames = (req, res) => {
   const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
   if (req.body.counter === undefined) {
