@@ -12,7 +12,7 @@ exports.findUserByName = (req, res) => {
   User.findOne({ name: guruName }).exec((err, user) => {
     if (err || !user) {
       return res.status(400).json({
-        error: "User not found",
+        error: "User not found"
       });
     } else {
       return res.status(200).json({ user });
@@ -33,7 +33,7 @@ exports.findUserById = (req, res, next, id) => {
     .exec((err, user) => {
       if (err || !user) {
         return res.status(400).json({
-          error: "User not found",
+          error: "User not found"
         });
       }
       req.profile = user; // adds profile object in req with user info
@@ -49,7 +49,7 @@ exports.hasAuthorization = (req, res, next) => {
 
   if (!authorized) {
     return res.status(403).json({
-      error: "User is not authorized to perform this action",
+      error: "User is not authorized to perform this action"
     });
   }
   next();
@@ -59,7 +59,7 @@ exports.findAllUsers = (req, res) => {
   User.find((err, users) => {
     if (err) {
       return res.status(400).json({
-        error: err,
+        error: err
       });
     }
     res.json(users);
@@ -79,7 +79,7 @@ exports.updateUser = (req, res, next) => {
   form.parse(req, (err, fields, files) => {
     if (err) {
       return res.status(400).json({
-        error: "Photo could not be uploaded",
+        error: "Photo could not be uploaded"
       });
     }
     // save user
@@ -95,7 +95,7 @@ exports.updateUser = (req, res, next) => {
     user.save((err, result) => {
       if (err) {
         return res.status(400).json({
-          error: err,
+          error: err
         });
       }
       // so these don't get pass to the front end
@@ -111,10 +111,10 @@ exports.updateUser = (req, res, next) => {
 async function fetchCollection(url) {
   return await axios
     .get(url)
-    .then((response) => {
+    .then(response => {
       return response;
     })
-    .catch((err) => console.log(err));
+    .catch(err => console.log(err));
 }
 
 // helper fxn to process bggeek format to be use
@@ -162,7 +162,7 @@ function processBggBoardgame(bgItem) {
     wantFromBuy: bgStats.wanttobuy === "1",
     wantToPlay: bgStats.wanttoplay === "1",
     notes: bgItem.comment === undefined ? "" : bgItem.comment[0],
-    numOfPlay: bgItem.numplays[0],
+    numOfPlay: bgItem.numplays[0]
   };
 
   return bg;
@@ -178,7 +178,7 @@ function processNewBoardgame(bgItem) {
     minPlayers: bgItem.minPlayers,
     maxPlayers: bgItem.maxPlayers,
     minPlayTime: bgItem.minPlayTime,
-    maxPlayTime: bgItem.maxPlayTime,
+    maxPlayTime: bgItem.maxPlayTime
   };
   return newBoardgame;
 }
@@ -191,7 +191,7 @@ function processNewBoardgameStats(bgItem, boardgameInfo) {
     wantFromBuy: bgItem.wantFromBuy,
     wantToPlay: bgItem.wantToPlay,
     numOfPlay: bgItem.numOfPlay,
-    notes: bgItem.notes,
+    notes: bgItem.notes
   };
 
   return userBgStats;
@@ -218,7 +218,7 @@ exports.updateBggUsername = (req, res) => {
   }
 
   fetchCollection(url)
-    .then((response) => {
+    .then(response => {
       if (response.status === 200) {
         let boardgames = [];
         let xml = XML2JS.parseString(response.data, (err, result) => {
@@ -228,12 +228,12 @@ exports.updateBggUsername = (req, res) => {
               .json({ error: "BGG username not found. Please try again." });
           }
           if (result.items.$.totalitems !== "0") {
-            result.items.item.forEach((bgItem) => {
+            result.items.item.forEach(bgItem => {
               let boardgame = processBggBoardgame(bgItem);
               boardgames.push(boardgame);
             });
 
-            boardgames.forEach(async (bgItem) => {
+            boardgames.forEach(async bgItem => {
               // add if bg not in database
               // update boardgame info if it's there
               let newBg = processNewBoardgame(bgItem);
@@ -244,7 +244,7 @@ exports.updateBggUsername = (req, res) => {
               );
               // check if user already have the boardgame
               let findUserBoardgame = user.boardgames.find(
-                (bg) =>
+                bg =>
                   bg.boardgame != undefined &&
                   bg.boardgame._id == String(foundBoardgame._id)
               );
@@ -260,11 +260,11 @@ exports.updateBggUsername = (req, res) => {
                 let updated = await User.findOneAndUpdate(
                   {
                     _id: user._id,
-                    "boardgames.boardgame": foundBoardgame._id,
+                    "boardgames.boardgame": foundBoardgame._id
                   },
                   { $set: { "boardgames.$": findUserBoardgame } },
                   {
-                    new: true,
+                    new: true
                   }
                 );
               } else {
@@ -278,7 +278,7 @@ exports.updateBggUsername = (req, res) => {
                   { $push: { boardgames: newBgStat } },
                   {
                     upsert: true,
-                    new: true,
+                    new: true
                   }
                 );
               }
@@ -289,7 +289,7 @@ exports.updateBggUsername = (req, res) => {
           user.save((err, result) => {
             if (err) {
               return res.status(400).json({
-                error: "Cannot save data. Please try again later.",
+                error: "Cannot save data. Please try again later."
               });
             }
             // so these don't get pass to the front end
@@ -304,7 +304,7 @@ exports.updateBggUsername = (req, res) => {
         }, 5000);
       }
     })
-    .catch((err) => {
+    .catch(err => {
       return res
         .status(404)
         .json({ error: "Error fetching data. Please try again later" });
@@ -316,7 +316,7 @@ exports.deleteUser = (req, res, next) => {
   user.remove((err, user) => {
     if (err) {
       return res.status(400).json({
-        error: err,
+        error: err
       });
     }
     res.json({ message: "User deleted successfully" });
@@ -327,6 +327,8 @@ exports.getUserPhoto = (req, res, next) => {
   if (req.profile.photo.data) {
     res.set(("Content-Type", req.profile.photo.contentType));
     return res.send(req.profile.photo.data);
+  } else {
+    return res.send("Error: Image Not Found");
   }
   next();
 };
@@ -356,7 +358,7 @@ exports.addFollower = (req, res) => {
     .exec((err, result) => {
       if (err) {
         return res.status(400).json({
-          error: err,
+          error: err
         });
       }
       result.hashed_password = undefined;
@@ -390,7 +392,7 @@ exports.removeFollower = (req, res) => {
     .exec((err, result) => {
       if (err) {
         return res.status(400).json({
-          error: err,
+          error: err
         });
       }
       result.hashed_password = undefined;
@@ -406,7 +408,7 @@ exports.findPeople = (req, res) => {
   User.find({ _id: { $nin: following } }, (err, users) => {
     if (err) {
       return res.status(400).json({
-        error: err,
+        error: err
       });
     }
     res.json(users);
