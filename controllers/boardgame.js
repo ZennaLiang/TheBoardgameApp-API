@@ -6,13 +6,15 @@ const XML2JS = require("xml2js");
 const User = require("../models/user");
 
 const Boardgame = require("../models/boardgame");
+const { resolve } = require("path");
+const { reject } = require("lodash");
 
 exports.findBgByUsername = (req, res, next, id) => {
   fetch(
     `https://www.boardgamegeek.com/xmlapi2/collection?username=ZennaL&subtype=boardgame&own=0`
   )
     .then((response) => response.text())
-    .then((data) => {});
+    .then((data) => { });
   next();
 };
 
@@ -41,7 +43,7 @@ function processBggBoardgame(bgItem) {
 
     avgRating:
       bgItem.stats[0] === undefined ||
-      isNaN(bgItem.stats[0].rating[0].average[0].$.value)
+        isNaN(bgItem.stats[0].rating[0].average[0].$.value)
         ? "N/A"
         : bgItem.stats[0].rating[0].average[0].$.value,
 
@@ -210,26 +212,25 @@ exports.checkBggAccountExist = async (req, res, next) => {
   next();
 };
 
-exports.updateUserCollection = async (req, res) => {
+exports.updateUserCollection = (req, res) => {
   let id = req.params.userId;
-
-  await req.body.forEach((boardgame) => {
-    User.update(
-      { _id: id, "boardgames._id": boardgame._id },
-      {
-        $set: {
-          "boardgames.$.condition": boardgame.condition,
-          "boardgames.$.price": boardgame.price,
-        },
+  User.updateOne(
+    { _id: id },
+    {
+      $set: {
+        "boardgames": req.body,
       }
-    )
-      .then((response) => {
-        if (response.ok) {
-          return 0;
-        } else {
-          throw response.text;
-        }
-      })
-      .catch((err) => console.log(err));
-  });
+    },
+    {runValidators: true},
+  ).then((response) => {
+    if (response.ok) {
+      res.status(200).json({ ok: true })
+    } else {
+      throw response.text;
+    }
+  })
+    .catch((err) => {
+      console.log(err)
+      res.status(400).json({ ok: false, error: err })
+    });
 };

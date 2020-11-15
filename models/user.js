@@ -68,8 +68,12 @@ const userSchema = new mongoose.Schema(
         price: Number,
         condition: {
           type: String,
-          enum: ["Excellent", "Good", "Fair", "Poor"],
+          enum: ['Excellent', 'Good', 'Fair', 'Poor']
         },
+        tags: [{
+          type: String,
+          maxlength: 25,
+        }]
       },
     ],
   },
