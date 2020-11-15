@@ -37,6 +37,14 @@ const userSchema = new mongoose.Schema(
     },
     following: [{ type: ObjectId, ref: "User" }],
     followers: [{ type: ObjectId, ref: "User" }],
+    friends: [{ type: ObjectId, ref: "User" }],
+    unconfirmedFriends: [
+      {
+        friend: [{ type: ObjectId, ref: "User" }],
+        sender: Boolean,
+        confirmed: Boolean,
+      },
+    ],
     resetPasswordLink: {
       data: String,
       default: "",
@@ -58,10 +66,10 @@ const userSchema = new mongoose.Schema(
         wantToPlay: Boolean,
         numOfPlay: Number,
         price: Number,
-        condition:{
+        condition: {
           type: String,
-          enum: ['Excellent','Good','Fair','Poor']
-      }
+          enum: ["Excellent", "Good", "Fair", "Poor"],
+        },
       },
     ],
   },

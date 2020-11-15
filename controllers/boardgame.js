@@ -6,23 +6,6 @@ const XML2JS = require("xml2js");
 const User = require("../models/user");
 
 const Boardgame = require("../models/boardgame");
-exports.findUserById = (req, res, next, id) => {
-  //.exec will either get error or user info
-  User.findById(id)
-    .populate(
-      "boardgames.boardgame",
-      "_id bggId title yearPublished minPlayers maxPlayers minPlayTime maxPlayTime imgThumbnail avgRating"
-    )
-    .exec((err, user) => {
-      if (err || !user) {
-        return res.status(400).json({
-          error: "User not found",
-        });
-      }
-      req.profile = user; // adds profile object in req with user info
-      next();
-    });
-};
 
 exports.findBgByUsername = (req, res, next, id) => {
   fetch(
@@ -37,6 +20,8 @@ exports.getBoardgame = (req, res) => {
   return res.json(req.boardgame);
 };
 
+//helper fxn for loop to keep getting info from boardgamegeek
+// as it may take a few trys for them to return the results
 async function fetchCollection(url) {
   return axios
     .get(url)

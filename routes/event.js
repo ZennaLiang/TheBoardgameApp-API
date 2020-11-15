@@ -2,7 +2,6 @@ const express = require("express");
 
 const { requireSignIn } = require("../controllers/auth");
 const {
-  findUserById,
   getEvent,
   findEventById,
   eventsByUser,
@@ -11,6 +10,7 @@ const {
   updateEvent,
   deleteEvent,
 } = require("../controllers/event");
+const { findUserById } = require("../controllers/user");
 
 const router = express.Router();
 router.get("/event/:eventId", getEvent);
