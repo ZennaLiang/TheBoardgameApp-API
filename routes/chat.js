@@ -2,16 +2,14 @@ const express = require("express");
 
 const {
   getChats,
+  createChat
 } = require("../controllers/chat");
 const { requireSignIn } = require("../controllers/auth");
-const { createPostValidator } = require("../validator");
 const { findUserById } = require("../controllers/user");
 
 const router = express.Router();
+router.post("/chat/start", requireSignIn, createChat);
 
-router.get("/chat", (req, res)=>{
-    res.send("hi")
-});
-
+router.get("/chat", requireSignIn, getChats);
 
 module.exports = router;
