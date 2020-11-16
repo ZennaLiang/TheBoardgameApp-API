@@ -34,6 +34,7 @@ const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const boardgameRoutes = require("./routes/boardgame");
 const tradeRoutes = require("./routes/trade");
+const chatRoutes = require("./routes/chat")
 
 /**************************************************************************
  **************************         API DOC         ************************
@@ -66,6 +67,7 @@ app.use('/api', userRoutes);
 app.use('/api', boardgameRoutes);
 app.use('/api', tradeRoutes);
 app.use("/api", eventRoutes);
+app.use("/api", chatRoutes);
 // show error when user try to access web without authorization  
 
 app.use(function (err, req, res, next) {
