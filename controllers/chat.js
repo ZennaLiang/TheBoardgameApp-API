@@ -1,7 +1,57 @@
 const Chat = require("../models/chat");
 const User = require("../models/user")
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken")
 const { ObjectId } = mongoose.Types;
+
+exports.initSocket = (io) => {
+  io.on('connection', (conn) => {
+    conn.on('auth', (data) => {
+      jwt.verify(data.token, process.env.JWT_SECRET, {
+        algorithms: ["HS256"],
+      }, (err, decoded) => {
+        if (err) {
+          console.log(`\n\nJWT ERROR\n\n`);
+        } else {
+          console.log(`\n\nJWT SUCCESS\n\n`);
+          conn.user = decoded
+        }
+      })
+    })
+
+    conn.on("join", (data) => {
+      conn.join(data.chatId)
+    })
+
+    conn.on("chat", (data) => {
+      Chat.findById(data._id)
+        .exec((error, chat) => {
+          if (error || !chat) {
+            return res.status(500).json({ error });
+          }
+          let msgObject = {
+            message: data.message,
+            timestamp: Date.now(),
+            from: conn.user._id
+          };
+
+
+          chat.messages.push(msgObject)
+
+          chat.save().then(async (saved) => {
+            console.log(msgObject);
+            io.to(data._id).emit("newchat", msgObject)
+          }).catch((error) => {
+            console.log(`\n\nCHAT ERROR\n\n`, error);
+          })
+
+
+
+        })
+    })
+
+  });
+}
 
 exports.getChats = (req, res) => {
   Chat.find({ between: req.auth._id })

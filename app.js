@@ -8,6 +8,9 @@ const expressValidator = require("express-validator");
 const fs = require("fs");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const ws = require("ws").Server
+const http = require("http")
+const server = http.createServer(app);
 dotenv.config();
 
 /**************************************************************************
@@ -76,7 +79,14 @@ app.use(function (err, req, res, next) {
   }
 });
 
+const io = require("socket.io")(server, {
+  cors: true,
+  origins: [process.env.CLIENT_URL],
+})
+
+const chatInit = require("./controllers/chat").initSocket(io)
+
 const port = process.env.PORT || 8080;
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`A Node Js API is listening on port: ${port}`);
 });
