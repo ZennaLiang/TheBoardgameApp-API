@@ -13,7 +13,7 @@ exports.initSocket = (io) => {
         if (err) {
           console.log(`\n\nJWT ERROR\n\n`);
         } else {
-          console.log(`\n\nJWT SUCCESS\n\n`);
+          console.log(`JWT SUCCESS\n\nuser ${decoded._id} connected securely`);
           conn.user = decoded
         }
       })
