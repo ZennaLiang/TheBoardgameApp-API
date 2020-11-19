@@ -29,23 +29,25 @@ exports.initSocket = (io) => {
           if (error || !chat) {
             return res.status(500).json({ error });
           }
-          let msgObject = {
-            _id: chat._id,
-            message: data.message,
-            timestamp: Date.now(),
-            from: conn.user._id
-          };
 
-
-          chat.messages.push(msgObject)
-
-          chat.save().then(async (saved) => {
-            io.to(data._id).emit("newMsg", msgObject)
-          }).catch((error) => {
-            console.log(`\n\nCHAT ERROR\n\n`, error);
-          })
-
-
+          try {
+            let msgObject = {
+              _id: chat._id,
+              message: data.message,
+              timestamp: Date.now(),
+              from: conn.user._id
+            };
+  
+            chat.messages.push(msgObject)
+  
+            chat.save().then(async (saved) => {
+              io.to(data._id).emit("newMsg", msgObject)
+            }).catch((error) => {
+              console.log(`\n\nCHAT ERROR\n\n`, error);
+            })
+          } catch (error) {
+            console.log(error);
+          }
 
         })
     })
@@ -55,7 +57,7 @@ exports.initSocket = (io) => {
 
 exports.getChats = (req, res) => {
   Chat.find({ between: req.auth._id })
-    .populate("between", "_id name")
+    .populate("between", "_id name photo")
     .exec((err, chats) => {
       if (err || !chats) {
         return res.status(400).json({
@@ -87,7 +89,7 @@ exports.createChat = async (req, res, next) => {
   })
 
   await chat.save(async (err, data) => {
-    data = await Chat.findOne(data).populate("between", "_id name").populate("messages.from", "_id name");
+    data = await Chat.findOne(data).populate("between", "_id name photo").populate("messages.from", "_id name");
     if (err) {
       return res.status(500).json(err)
     }
@@ -98,7 +100,7 @@ exports.createChat = async (req, res, next) => {
 
 exports.getChat = async (req, res) => {
   Chat.findById(req.params.id)
-    .populate("between", "_id name")
+    .populate("between", "_id name photo")
     .populate("messages.from", "_id name")
     .exec((err, chat) => {
       if (err || !chat) {
