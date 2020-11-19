@@ -30,6 +30,7 @@ exports.initSocket = (io) => {
             return res.status(500).json({ error });
           }
           let msgObject = {
+            _id: chat._id,
             message: data.message,
             timestamp: Date.now(),
             from: conn.user._id
@@ -39,8 +40,7 @@ exports.initSocket = (io) => {
           chat.messages.push(msgObject)
 
           chat.save().then(async (saved) => {
-            console.log(msgObject);
-            io.to(data._id).emit("newchat", msgObject)
+            io.to(data._id).emit("newMsg", msgObject)
           }).catch((error) => {
             console.log(`\n\nCHAT ERROR\n\n`, error);
           })
