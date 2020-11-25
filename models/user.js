@@ -11,29 +11,30 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: true,
+      unique: true
     },
     email: {
       type: String,
       trim: true,
-      required: true,
+      required: true
     },
     hashed_password: {
       type: String,
-      required: true,
+      required: true
     },
     salt: String,
     createdDate: {
       type: Date,
-      default: Date.now,
+      default: Date.now
     },
     updated: Date,
     photo: {
       data: Buffer,
-      contentType: String,
+      contentType: String
     },
     about: {
       type: String,
-      trim: true,
+      trim: true
     },
     following: [{ type: ObjectId, ref: "User" }],
     followers: [{ type: ObjectId, ref: "User" }],
@@ -42,19 +43,19 @@ const userSchema = new mongoose.Schema(
       {
         friend: [{ type: ObjectId, ref: "User" }],
         sender: Boolean,
-        confirmed: Boolean,
-      },
+        confirmed: Boolean
+      }
     ],
     resetPasswordLink: {
       data: String,
-      default: "",
+      default: ""
     },
     role: {
       type: String,
-      default: "subscriber",
+      default: "subscriber"
     },
     bggUsername: {
-      type: String,
+      type: String
     },
     boardgames: [
       {
@@ -68,14 +69,16 @@ const userSchema = new mongoose.Schema(
         price: Number,
         condition: {
           type: String,
-          enum: ['Excellent', 'Good', 'Fair', 'Poor']
+          enum: ["Excellent", "Good", "Fair", "Poor"]
         },
-        tags: [{
-          type: String,
-          maxlength: 25,
-        }]
-      },
-    ],
+        tags: [
+          {
+            type: String,
+            maxlength: 25
+          }
+        ]
+      }
+    ]
   },
   { toJson: { virtual: true } }
 );
@@ -92,7 +95,7 @@ const userSchema = new mongoose.Schema(
 // virtual field for temp password
 userSchema
   .virtual("password")
-  .set(function (password) {
+  .set(function(password) {
     // create temporary variable called _password
     this._password = password;
     // generate a timestamp
@@ -100,7 +103,7 @@ userSchema
     // encrypt password
     this.hashed_password = this.encryptPassword(password);
   })
-  .get(function () {
+  .get(function() {
     return this._password;
   });
 
@@ -111,11 +114,11 @@ userSchema
  **************************************************************************/
 
 userSchema.methods = {
-  authenticate: function (plainText) {
+  authenticate: function(plainText) {
     return this.encryptPassword(plainText) === this.hashed_password;
   },
   // encrypt the password and check if password match
-  encryptPassword: function (password) {
+  encryptPassword: function(password) {
     if (!password) return "";
     try {
       return crypto
@@ -125,10 +128,10 @@ userSchema.methods = {
     } catch (err) {
       return "";
     }
-  },
+  }
 };
 
-userSchema.pre("remove", function (next) {
+userSchema.pre("remove", function(next) {
   Post.remove({ postedBy: this._id }).exec();
   next();
 });

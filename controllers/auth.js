@@ -9,9 +9,16 @@ const User = require("../models/user");
 
 exports.signUp = async (req, res) => {
   const userExists = await User.findOne({ email: req.body.email });
+
+  const nameExists = await User.findOne({ name: req.body.name.toLowerCase() });
   if (userExists) {
     return res.status(403).json({
-      error: "This email is already taken. Please try another.",
+      error: "This email is already taken. Please try another."
+    });
+  }
+  if (nameExists) {
+    return res.status(403).json({
+      error: "This name is already taken. Please try another."
     });
   }
   const user = await new User(req.body);
@@ -26,14 +33,14 @@ exports.signIn = (req, res) => {
     // if err or no user
     if (err || !user) {
       return res.status(401).json({
-        error: "User with that email does not exist. Please sign up!",
+        error: "User with that email does not exist. Please sign up!"
       });
     }
     // if user is found make sure the email and password match
     // create authenticate method in model and use here
     if (!user.authenticate(password)) {
       return res.status(401).json({
-        error: "Email and password do not match",
+        error: "Email and password do not match"
       });
     }
     // generate a token with user id and secret
@@ -55,14 +62,14 @@ exports.googleLogin = async (req, res) => {
   const idToken = req.body.tokenId;
   const ticket = await client.verifyIdToken({
     idToken,
-    audience: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+    audience: process.env.REACT_APP_GOOGLE_CLIENT_ID
   });
   const {
     email_verified,
     email,
     name,
     picture,
-    sub: googleid,
+    sub: googleid
   } = ticket.getPayload();
 
   if (email_verified) {
@@ -148,7 +155,7 @@ exports.signOut = (req, res) => {
 exports.requireSignIn = expressJwt({
   secret: process.env.JWT_SECRET,
   algorithms: ["HS256"],
-  userProperty: "auth",
+  userProperty: "auth"
 });
 
 exports.forgotPassword = (req, res) => {
@@ -164,7 +171,7 @@ exports.forgotPassword = (req, res) => {
     // if err or no user
     if (err || !user)
       return res.status("401").json({
-        error: "User with that email does not exist!",
+        error: "User with that email does not exist!"
       });
 
     // generate a token with user id and secret
@@ -181,7 +188,7 @@ exports.forgotPassword = (req, res) => {
       text: `Please use the following link to reset your password: 
                 ${process.env.CLIENT_URL}/reset-password/${token}`,
       html: `<p>Please use the following link to reset your password:</p> 
-                <p>${process.env.CLIENT_URL}/reset-password/${token}</p>`,
+                <p>${process.env.CLIENT_URL}/reset-password/${token}</p>`
     };
 
     return user.updateOne({ resetPasswordLink: token }, (err, success) => {
@@ -190,7 +197,7 @@ exports.forgotPassword = (req, res) => {
       } else {
         sendEmail(emailData);
         return res.status(200).json({
-          message: `Email has been sent to ${email}. Follow the instructions to reset your password.`,
+          message: `Email has been sent to ${email}. Follow the instructions to reset your password.`
         });
       }
     });
@@ -210,12 +217,12 @@ exports.resetPassword = (req, res) => {
     // if err or no user
     if (err || !user)
       return res.status("401").json({
-        error: "Invalid Link!",
+        error: "Invalid Link!"
       });
 
     const updatedFields = {
       password: newPassword,
-      resetPasswordLink: "",
+      resetPasswordLink: ""
     };
 
     user = _.extend(user, updatedFields);
@@ -224,11 +231,11 @@ exports.resetPassword = (req, res) => {
     user.save((err, result) => {
       if (err) {
         return res.status(400).json({
-          error: err,
+          error: err
         });
       }
       res.json({
-        message: `Great! Now you can login with your new password.`,
+        message: `Great! Now you can login with your new password.`
       });
     });
   });
