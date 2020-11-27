@@ -79,6 +79,7 @@ exports.googleLogin = async (req, res) => {
       if (err || !user) {
         // create a new user and login
         user = new User(newUser);
+        user.name = user.name.toLowerCase();
         req.profile = user;
         user.save();
         // generate a token with user id and secret
@@ -115,6 +116,7 @@ exports.facebookLogin = async (req, res) => {
     if (err || !user) {
       // create a new user and login
       user = new User(req.body);
+      user.name = user.name.toLowerCase();
       req.profile = user;
       user.save();
       // generate a token with user id and secret
