@@ -40,7 +40,7 @@ exports.getAllTrades = async (req, res) => {
       if (totalItems > 0) {
         res.status(200).json(trades);
       } else {
-        res.status(204);
+        res.status(204).json();
       }
     })
     .catch(err => console.log(err));
@@ -79,7 +79,7 @@ exports.getTradesById = async (req, res) => {
       if (totalItems > 0) {
         res.status(200).json(trades);
       } else {
-        res.status(204);
+        res.status(204).json();
       }
     })
     .catch(err => console.log(err));
