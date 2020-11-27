@@ -37,7 +37,11 @@ exports.getAllTrades = async (req, res) => {
         .select("tradeOffer tradeWants notes createdDate");
     })
     .then(trades => {
-      res.status(200).json(trades);
+      if (totalItems > 0) {
+        res.status(200).json(trades);
+      } else {
+        res.status(204);
+      }
     })
     .catch(err => console.log(err));
 };
@@ -72,7 +76,11 @@ exports.getTradesById = async (req, res) => {
         .select("tradeOffer tradeWants status notes createdDate");
     })
     .then(trades => {
-      res.status(200).json(trades);
+      if (totalItems > 0) {
+        res.status(200).json(trades);
+      } else {
+        res.status(204);
+      }
     })
     .catch(err => console.log(err));
 };
@@ -90,7 +98,7 @@ exports.updateTradeStatus = (req, res) => {
   console.log(req.body);
   let status = req.body.status;
   console.log(status);
-  Trade.updateOne({_id: tradeId}, { status: status }, function(err, result) {
+  Trade.updateOne({ _id: tradeId }, { status: status }, function(err, result) {
     if (err) {
       res.send(err);
     } else {
