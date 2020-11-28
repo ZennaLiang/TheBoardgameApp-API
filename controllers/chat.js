@@ -70,7 +70,7 @@ exports.getChats = (req, res) => {
 };
 
 exports.createChat = async (req, res, next) => {
-  let user = await User.findOne({ name: req.body.who })
+  let user = await User.findOne({ name: req.body.who.toLowerCase() })
 
   if (!user) {
     return res.status(400).json({ error: "User not found" })
