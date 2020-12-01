@@ -37,9 +37,9 @@ exports.initSocket = (io) => {
               timestamp: Date.now(),
               from: conn.user._id
             };
-  
+
             chat.messages.push(msgObject)
-  
+
             chat.save().then(async (saved) => {
               io.to(data._id).emit("newMsg", msgObject)
             }).catch((error) => {
@@ -133,8 +133,17 @@ exports.createMessage = async (req, res) => {
       }).catch((error) => {
         res.status(400).json({ error })
       })
-
-
-
     })
+}
+
+exports.searchUser = async (req, res) => {
+
+  try {
+    let regex = new RegExp(`^${req.body.name.toLowerCase()}`)
+    let users = await User.find({ name: regex }).limit(5).exec()
+    res.send(users)
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error)
+  }
 }
