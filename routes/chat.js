@@ -15,8 +15,7 @@ const router = express.Router();
 
 // POSTS
 router.post("/chat/start", requireSignIn, createChat);
-router.post("/chat/send", requireSignIn, createMessage)
-router.post("/chat/search_user", requireSignIn, rateLimit({windowMs: 30000, max: 25}), searchUser)
+router.post("/chat/search_user", requireSignIn, rateLimit({ windowMs: 30000, max: 20 }), searchUser)
 
 // GETS
 router.get("/chat/get/:id", requireSignIn, getChat)
