@@ -137,10 +137,10 @@ exports.createMessage = async (req, res) => {
 }
 
 exports.searchUser = async (req, res) => {
-  
+
   try {
     let regex = new RegExp(`^${req.body.name.toLowerCase()}`)
-    let users = await User.find({name: regex}).limit(5).exec() 
+    let users = await User.find({ name: regex }).limit(5).exec()
     res.send(users)
   } catch (error) {
     console.log(error);
