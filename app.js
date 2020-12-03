@@ -8,6 +8,9 @@ const expressValidator = require("express-validator");
 const fs = require("fs");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const ws = require("ws").Server
+const http = require("http")
+const server = http.createServer(app);
 dotenv.config();
 
 /**************************************************************************
@@ -34,6 +37,7 @@ const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const boardgameRoutes = require("./routes/boardgame");
 const tradeRoutes = require("./routes/trade");
+const chatRoutes = require("./routes/chat")
 
 /**************************************************************************
  **************************         API DOC         ************************
@@ -66,6 +70,7 @@ app.use('/api', userRoutes);
 app.use('/api', boardgameRoutes);
 app.use('/api', tradeRoutes);
 app.use("/api", eventRoutes);
+app.use("/api", chatRoutes);
 // show error when user try to access web without authorization  
 
 app.use(function (err, req, res, next) {
@@ -74,7 +79,14 @@ app.use(function (err, req, res, next) {
   }
 });
 
+const io = require("socket.io")(server, {
+  cors: true,
+  origins: [process.env.CLIENT_URL],
+})
+
+const chatInit = require("./controllers/chat").initSocket(io)
+
 const port = process.env.PORT || 8080;
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`A Node Js API is listening on port: ${port}`);
 });
