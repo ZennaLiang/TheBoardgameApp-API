@@ -71,8 +71,8 @@ exports.getTradesById = async (req, res) => {
     .then(count => {
       totalItems = count;
       return Trade.find()
-        .populate("tradeSender", "_id name")
-        .populate("tradeReceiver", "_id name")
+        .populate("tradeSender", "_id name photo")
+        .populate("tradeReceiver", "_id name photo")
         .select("tradeOffer tradeWants status notes createdDate");
     })
     .then(trades => {
