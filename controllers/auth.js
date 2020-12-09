@@ -8,9 +8,10 @@ const { sendEmail } = require("../helpers");
 const User = require("../models/user");
 
 exports.signUp = async (req, res) => {
+  req.body.name = req.body.name.toLowerCase();
   const userExists = await User.findOne({ email: req.body.email });
 
-  const nameExists = await User.findOne({ name: req.body.name.toLowerCase() });
+  const nameExists = await User.findOne({ name: req.body.name });
   if (userExists) {
     return res.status(403).json({
       error: "This email is already taken. Please try another."
