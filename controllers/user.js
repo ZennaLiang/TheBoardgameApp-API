@@ -243,10 +243,12 @@ exports.updateBggUsername = (req, res) => {
                 newBg,
                 { upsert: true }
               );
+              
               // check if user already have the boardgame
-              let findUserBoardgame = user.boardgames.find(
+              let findUserBoardgame = await user.boardgames.find(
                 bg =>
-                  bg.boardgame != undefined &&
+                  bg.boardgame != undefined && bg.boardgame != null && 
+                  foundBoardgame != null &&
                   bg.boardgame._id == String(foundBoardgame._id)
               );
               // if bg found, update status from boardgamegeek to guru

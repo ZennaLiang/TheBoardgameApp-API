@@ -16,8 +16,10 @@ dotenv.config();
 /**************************************************************************
  **************************       DB Connection    ************************
  **************************************************************************/
-mongoose
-  .connect(process.env.MONGO_URI, {
+
+let conString = (process.argv).toString().includes('mocha') ? "mongodb://localhost/bggapi": process.env.MONGO_URI;
+ mongoose
+  .connect(conString, { //.connect(process.env.MONGO_URI, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
     useFindAndModify: false,
@@ -90,3 +92,5 @@ const port = process.env.PORT || 8080;
 server.listen(port, () => {
   console.log(`A Node Js API is listening on port: ${port}`);
 });
+
+module.exports = app;
