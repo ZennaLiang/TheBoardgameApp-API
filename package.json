@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "mocha --timeout 20000"
+    "test":"nodemon --exec \"mocha -R min\"" 
   },
   "keywords": [
     "node",
