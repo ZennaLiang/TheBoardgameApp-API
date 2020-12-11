@@ -191,7 +191,9 @@ exports.forgotPassword = (req, res) => {
       text: `Please use the following link to reset your password: 
                 ${process.env.CLIENT_URL}/reset-password/${token}`,
       html: `<p>Please use the following link to reset your password:</p> 
-                <p>${process.env.CLIENT_URL}/reset-password/${token}</p>`
+                <a target="_blank" href="${process.env.CLIENT_URL}/reset-password/${token}">Click here to reset password</a>
+                <br/>
+                <p>If you did not request for password change, please ignore this email.</p>`
     };
 
     return user.updateOne({ resetPasswordLink: token }, (err, success) => {
@@ -215,6 +217,7 @@ exports.forgotPassword = (req, res) => {
 
 exports.resetPassword = (req, res) => {
   const { resetPasswordLink, newPassword } = req.body;
+
   //console.log("password reset");
   User.findOne({ resetPasswordLink }, (err, user) => {
     // if err or no user
