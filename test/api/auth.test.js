@@ -4,18 +4,16 @@ const chai = require("chai");
 const chaiHttp = require("chai-http");
 const { expect } = require("chai");
 const { it } = require("mocha");
-const jwt = require("jsonwebtoken");
 const should = chai.should();
-const token = jwt.sign({ _id: "123", iss: "NODEAPI" }, process.env.JWT_SECRET);
+
 describe("AuthController", () => {
   before((done) => {
     const nUser = new User({
       email: "user@test.com",
-      name: "test user",
-      password: "testuser",
+      name: "john doe",
+      password: "Password1",
     });
     nUser.save();
-
     done();
   });
 
@@ -31,10 +29,10 @@ describe("AuthController", () => {
         .post("/api/signin")
         .send({
           email: "userwrong@test.com",
-          password: "testuser",
+          password: "Password1",
         })
         .end((err, res) => {
-          res.should.have.status(401);
+          expect(res).to.have.status(401);
           done();
         });
     });
@@ -45,10 +43,10 @@ describe("AuthController", () => {
         .post("/api/signin")
         .send({
           email: "user@test.com",
-          password: "1testuser12",
+          password: "Password112",
         })
         .end((err, res) => {
-          res.should.have.status(401);
+          expect(res).to.have.status(401);
           done();
         });
     });
@@ -59,12 +57,12 @@ describe("AuthController", () => {
         .post("/api/signin")
         .send({
           email: "user@test.com",
-          password: "testuser",
+          password: "Password1",
         })
         .end((err, res) => {
-          res.body.should.have.property("token");
-          res.body.should.have.property("user");
-          res.should.have.status(200);
+          expect(res.body).to.have.property("token");
+          expect(res.body).to.have.property("user");
+          expect(res).to.have.status(200);
           done();
         });
     });
@@ -77,12 +75,12 @@ describe("AuthController", () => {
         .post("/api/signup")
         .send({
           email: "user11@test.com",
-          name: "testuserone",
-          password: "Testuser1",
-          matchPassword: "Testuser1",
+          name: "sam",
+          password: "Password1",
+          matchPassword: "Password1",
         })
         .end((err, res) => {
-          res.should.have.status(200);
+          expect(res).to.have.status(200);
           done();
         });
     });
@@ -92,12 +90,12 @@ describe("AuthController", () => {
         .post("/api/signup")
         .send({
           email: "user@test.com",
-          name: "testuserone",
-          password: "Testuser1",
-          matchPassword: "Testuser1",
+          name: "john do",
+          password: "Password1",
+          matchPassword: "Password1",
         })
         .end((err, res) => {
-          res.should.have.status(403);
+          expect(res).to.have.status(403);
           done();
         });
     });
@@ -107,15 +105,15 @@ describe("AuthController", () => {
         .post("/api/signup")
         .send({
           email: "user1@test.com",
-          name: "test user",
-          password: "Testuser1",
-          matchPassword: "Testuser1",
+          name: "john doe",
+          password: "Password1",
+          matchPassword: "Password1",
         })
         .end((err, res) => {
           if (err) {
             console.log(err);
           }
-          res.should.have.status(403);
+          expect(res).to.have.status(403);
           done();
         });
     });
@@ -127,7 +125,7 @@ describe("AuthController", () => {
         .put("/api/forgot-password")
         .send({})
         .end((err, res) => {
-          res.should.have.status(400);
+          expect(res).to.have.status(400);
           done();
         });
     });
@@ -137,7 +135,7 @@ describe("AuthController", () => {
         .put("/api/forgot-password")
         .send({ email: null })
         .end((err, res) => {
-          res.should.have.status(400);
+          expect(res).to.have.status(400);
           done();
         });
     });
@@ -147,7 +145,7 @@ describe("AuthController", () => {
         .put("/api/forgot-password")
         .send({ email: "null@test.com" })
         .end((err, res) => {
-          res.should.have.status(401);
+          expect(res).to.have.status(401);
           done();
         });
     });
@@ -157,14 +155,15 @@ describe("AuthController", () => {
         .put("/api/forgot-password")
         .send({ email: "user@test.com" })
         .end((err, res) => {
-          res.body.message.should.equal(
+          expect(res.body.message).to.equal(
             `Email has been sent to user@test.com. Follow the instructions to reset your password.`
           );
-          res.should.have.status(200);
+          expect(res).to.have.status(200);
           done();
         });
     });
   });
+
   describe("Reset Password", () => {
     it("should show status 401 with invalid link", (done) => {
       chai
@@ -172,8 +171,8 @@ describe("AuthController", () => {
         .put("/api/reset-password")
         .send({ resetPasswordLink: "notvalidtoken", newPassword: "Abcd1234" })
         .end((err, res) => {
-          res.body.error.should.equal("Invalid Link!");
-          res.should.have.status(401);
+          expect(res.body.error).to.equal("Invalid Link!");
+          expect(res).to.have.status(401);
           done();
         });
     });
@@ -181,10 +180,13 @@ describe("AuthController", () => {
       chai
         .request(app)
         .put("/api/reset-password")
-        .send({ resetPasswordLink: "DoesntMatterAsItCheckPasswordFirst", newPassword: "Abcd" })
+        .send({
+          resetPasswordLink: "DoesntMatterAsItCheckPasswordFirst",
+          newPassword: "Abcd",
+        })
         .end((err, res) => {
-          res.body.should.have.property("error");
-          res.should.have.status(400);
+          expect(res.body).to.have.property("error");
+          expect(res).to.have.status(400);
           done();
         });
     });
@@ -195,7 +197,7 @@ describe("AuthController", () => {
           .put("/api/reset-password")
           .send({ resetPasswordLink: data.token, newPassword: "Abcd1234" })
           .end((err, res) => {
-            res.body.should.have.property("message");
+            expect(res.body).to.have.property("message");
             done();
           });
       });
