@@ -316,7 +316,7 @@ exports.updateBggUsername = (req, res) => {
 
 exports.deleteUser = (req, res, next) => {
   let user = req.profile;
-  user.remove((err, user) => {
+  user.deleteOne((err, user) => {
     if (err) {
       return res.status(400).json({
         error: err
