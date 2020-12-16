@@ -85,7 +85,7 @@ describe("User Controller", () => {
       });
   });
   after((done) => {
-    User.deleteMany();
+    User.collection.drop();
     done();
   });
 

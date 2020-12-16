@@ -7,3 +7,4 @@ chai.use(chaiHttp);
 
 require('./api/auth.test')
 require('./api/user.test')
+require('./api/event.test')

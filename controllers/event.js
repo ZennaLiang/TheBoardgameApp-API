@@ -38,6 +38,8 @@ exports.eventsByUser = (req, res) => {
 
 exports.createEvent = async (req, res) => {
   const event = await new Event(req.body);
+  event.owner = req.auth._id;
+
   await event.save((err, result) => {
     if (err) {
       return res.status(400).json({
@@ -60,7 +62,7 @@ exports.isOwner = (req, res, next) => {
 
   if (!isOwner) {
     return res.status(403).json({
-      error: "User is not authorized",
+      error: "User is not authorized to perform this action",
     });
   }
   next();
