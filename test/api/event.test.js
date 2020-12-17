@@ -1,5 +1,6 @@
 const User = require("../../models/user");
 const Event = require("../../models/event");
+const { createUser, getToken } = require("../helper");
 const app = require("../../app");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
@@ -8,32 +9,23 @@ const { it } = require("mocha");
 const { token } = require("morgan");
 const should = chai.should();
 
-let regUserToken;
 let regUser;
-let regUser2Token;
 let regUser2;
-let notLoginUser2;
+let adminUser;
+let adminToken;
+let regUserToken;
+let regUser2Token;
+let notLoginUser;
 let event;
+let event2;
+
 describe("Event Controller", () => {
   before((done) => {
-    regUser = new User({
-      email: "regUserJane@test.com",
-      name: "tom doe",
-      password: "Password1",
-    });
-    regUser.save();
-    regUser2 = new User({
-      email: "regUserJim@test.com",
-      name: "jim smith",
-      password: "Password1",
-    });
-    regUser2.save();
-    notLoginUser2 = new User({
-      email: "notLoginUser2@test.com",
-      name: "john smith",
-      password: "Password1",
-    });
-    notLoginUser2.save();
+    regUser = createUser("regUser@test.com", "jane doe");
+    regUser2 = createUser("regUser2@test.com", "john doe");
+    notLoginUser = createUser("notlogin@test.com", "sam smith");
+    adminUser = createUser("adminUser@test.com", "sam smith", "admin");
+
     event = new Event({
       title: "new event",
       startDate: new Date(),
@@ -49,7 +41,7 @@ describe("Event Controller", () => {
       .request(app)
       .post("/api/signin")
       .send({
-        email: "regUserJane@test.com",
+        email: "regUser@test.com",
         password: "Password1",
       })
       .end((err, res) => {
@@ -59,13 +51,24 @@ describe("Event Controller", () => {
           .request(app)
           .post("/api/signin")
           .send({
-            email: "regUserJim@test.com",
+            email: "regUser2@test.com",
             password: "Password1",
           })
           .end((err, res) => {
             expect(res).to.have.nested.property("body.token");
             regUser2Token = res.body.token;
-            done();
+            chai
+              .request(app)
+              .post("/api/signin")
+              .send({
+                email: "adminUser@test.com",
+                password: "Password1",
+              })
+              .end((err, res) => {
+                expect(res).to.have.nested.property("body.token");
+                adminToken = res.body.token;
+                done();
+              });
           });
       });
   });
@@ -75,6 +78,7 @@ describe("Event Controller", () => {
     Event.collection.drop();
     done();
   });
+
   describe("Get event by eventId", () => {
     it("should show 401 if user not logged in", (done) => {
       chai
@@ -115,7 +119,7 @@ describe("Event Controller", () => {
     it("should show 401 if user not logged in", (done) => {
       chai
         .request(app)
-        .get(`/api/events/by/${notLoginUser2._id}`)
+        .get(`/api/events/by/${notLoginUser._id}`)
         .end((err, res) => {
           expect(res).to.have.nested.property(
             "text",
@@ -150,7 +154,7 @@ describe("Event Controller", () => {
         });
     });
     it("should show 200 w/ array length 1", (done) => {
-      let event2 = new Event({
+      event2 = new Event({
         title: "new event",
         startDate: new Date(),
         owner: regUser._id,
@@ -171,11 +175,11 @@ describe("Event Controller", () => {
     it("should show 401 if user not logged in", (done) => {
       chai
         .request(app)
-        .post(`/api/event/new/${notLoginUser2._id}`)
+        .post(`/api/event/new/${notLoginUser._id}`)
         .send({
           title: "new event2",
           startDate: new Date(),
-          owner: notLoginUser2._id,
+          owner: notLoginUser._id,
         })
         .end((err, res) => {
           expect(res).to.have.nested.property(
@@ -252,6 +256,93 @@ describe("Event Controller", () => {
           expect(res).to.have.nested.property("body.title", "update event");
           expect(res).to.have.status(200);
           done();
+        });
+    });
+    it("should show 200 if updated by admin", (done) => {
+      chai
+        .request(app)
+        .put(`/api/event/${event._id}`)
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({
+          title: "update event again",
+          startDate: new Date(),
+        })
+        .end((err, res) => {
+          expect(res).to.have.nested.property(
+            "body.title",
+            "update event again"
+          );
+          expect(res).to.have.status(200);
+          done();
+        });
+    });
+  });
+  describe("Delete event", () => {
+    it("should show 401 if user not logged in", (done) => {
+      chai
+        .request(app)
+        .delete(`/api/event/${event._id}`)
+        .send({
+          title: "update event",
+          startDate: new Date(),
+        })
+        .end((err, res) => {
+          expect(res).to.have.nested.property(
+            "text",
+            '{"error":"Unauthorized Access!"}'
+          );
+          expect(res).to.have.status(401);
+          done();
+        });
+    });
+    it("should show 403 if delete by non admin/owner", (done) => {
+      chai
+        .request(app)
+        .delete(`/api/event/${event._id}`)
+        .set("Authorization", `Bearer ${regUser2Token}`)
+        .end((err, res) => {
+          expect(res).to.have.nested.property(
+            "text",
+            '{"error":"User is not authorized to perform this action"}'
+          );
+          expect(res).to.have.status(403);
+          done();
+        });
+    });
+    it("should show 200 w/ array length 2 if delete by owner", (done) => {
+      chai
+        .request(app)
+        .delete(`/api/event/${event._id}`)
+        .set("Authorization", `Bearer ${regUserToken}`)
+        .end((err, res) => {
+          expect(res).to.have.status(200);
+          chai
+            .request(app)
+            .get(`/api/events/by/${regUser._id}`)
+            .set("Authorization", `Bearer ${regUserToken}`)
+            .end((err, res) => {
+              expect(res.body).to.have.lengthOf(2);
+              expect(res).to.have.status(200);
+              done();
+            });
+        });
+    });
+    it("should show 200 w/ array length 1 if delete by admin", (done) => {
+      chai
+        .request(app)
+        .delete(`/api/event/${event2._id}`)
+        .set("Authorization", `Bearer ${adminToken}`)
+        .end((err, res) => {
+          expect(res).to.have.status(200);
+          chai
+            .request(app)
+            .get(`/api/events/by/${regUser._id}`)
+            .set("Authorization", `Bearer ${regUserToken}`)
+            .end((err, res) => {
+              expect(res.body).to.have.lengthOf(1);
+              expect(res).to.have.status(200);
+              done();
+            });
         });
     });
   });

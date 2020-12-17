@@ -1,5 +1,6 @@
 const User = require("../../models/user");
 const app = require("../../app"); // my express app
+const { createUser } = require("../helper");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const { expect } = require("chai");
@@ -8,13 +9,10 @@ const should = chai.should();
 
 describe("AuthController", () => {
   before((done) => {
-    const nUser = new User({
-      email: "user@test.com",
-      name: "john doe",
-      password: "Password1",
-    });
-    nUser.save();
-    done();
+    const nUser = createUser("regUser@test.com", "john doe");
+    setTimeout(function () {
+      done();
+    }, 500);
   });
 
   after((done) => {
@@ -42,7 +40,7 @@ describe("AuthController", () => {
         .request(app)
         .post("/api/signin")
         .send({
-          email: "user@test.com",
+          email: "regUser@test.com",
           password: "Password112",
         })
         .end((err, res) => {
@@ -56,7 +54,7 @@ describe("AuthController", () => {
         .request(app)
         .post("/api/signin")
         .send({
-          email: "user@test.com",
+          email: "regUser@test.com",
           password: "Password1",
         })
         .end((err, res) => {
@@ -74,7 +72,7 @@ describe("AuthController", () => {
         .request(app)
         .post("/api/signup")
         .send({
-          email: "user11@test.com",
+          email: "newUser@test.com",
           name: "sam",
           password: "Password1",
           matchPassword: "Password1",
@@ -89,7 +87,7 @@ describe("AuthController", () => {
         .request(app)
         .post("/api/signup")
         .send({
-          email: "user@test.com",
+          email: "regUser@test.com",
           name: "john do",
           password: "Password1",
           matchPassword: "Password1",
@@ -104,7 +102,7 @@ describe("AuthController", () => {
         .request(app)
         .post("/api/signup")
         .send({
-          email: "user1@test.com",
+          email: "regUser2@test.com",
           name: "john doe",
           password: "Password1",
           matchPassword: "Password1",
@@ -153,10 +151,10 @@ describe("AuthController", () => {
       chai
         .request(app)
         .put("/api/forgot-password")
-        .send({ email: "user@test.com" })
+        .send({ email: "regUser@test.com" })
         .end((err, res) => {
           expect(res.body.message).to.equal(
-            `Email has been sent to user@test.com. Follow the instructions to reset your password.`
+            `Email has been sent to regUser@test.com. Follow the instructions to reset your password.`
           );
           expect(res).to.have.status(200);
           done();
@@ -191,7 +189,7 @@ describe("AuthController", () => {
         });
     });
     it("should have valid message with correct token and password", (done) => {
-      User.findOne({ email: "user@test.com" }, function (err, data) {
+      User.findOne({ email: "regUser@test.com" }, function (err, data) {
         chai
           .request(app)
           .put("/api/reset-password")
