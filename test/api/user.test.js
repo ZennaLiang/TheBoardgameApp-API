@@ -1,5 +1,6 @@
 const User = require("../../models/user");
 const app = require("../../app"); // my express app
+const { createUser } = require("../helper");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const { expect } = require("chai");
@@ -19,31 +20,11 @@ let adminUser;
  */
 describe("User Controller", () => {
   before((done) => {
-    regUser = new User({
-      email: "regUser@test.com",
-      name: "jane doe",
-      password: "Password1",
-    });
-    regUser2 = new User({
-      email: "regUser2@test.com",
-      name: "john doe",
-      password: "Password1",
-    });
-    notLoginUser = new User({
-      email: "notlogin@test.com",
-      name: "sam smith",
-      password: "Password1",
-    });
-    adminUser = new User({
-      email: "adminUser@test.com",
-      name: "sam smith",
-      password: "Password1",
-      role: "admin",
-    });
-    regUser.save();
-    regUser2.save();
-    notLoginUser.save();
-    adminUser.save();
+    regUser = createUser("regUser@test.com", "jane doe");
+    regUser2 = createUser("regUser2@test.com", "john doe");
+    notLoginUser = createUser("notlogin@test.com", "sam smith");
+    adminUser = createUser("adminUser@test.com", "sam smith", "admin");
+
     setTimeout(function () {
       done();
     }, 500);
@@ -85,7 +66,7 @@ describe("User Controller", () => {
       });
   });
   after((done) => {
-    User.deleteMany();
+    User.collection.drop();
     done();
   });
 
