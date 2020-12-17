@@ -1,5 +1,5 @@
 const User = require("../../models/user");
-const Event = require("../../models/event");
+const Post = require("../../models/post");
 const { createUser } = require("../helper");
 const app = require("../../app");
 const chai = require("chai");
@@ -15,22 +15,21 @@ let adminToken;
 let regUserToken;
 let regUser2Token;
 let notLoginUser;
-let event;
-let event2;
-
-describe("Event Controller", () => {
+let post;
+let comment;
+describe("Post Controller", () => {
   before((done) => {
     regUser = createUser("regUser@test.com", "jane doe");
     regUser2 = createUser("regUser2@test.com", "john doe");
     notLoginUser = createUser("notlogin@test.com", "sam smith");
     adminUser = createUser("adminUser@test.com", "sam smith", "admin");
-
-    event = new Event({
-      title: "new event",
+    post = new Post({
+      title: "new post",
+      body: "At vim hinc civibus.",
       startDate: new Date(),
-      owner: regUser._id,
+      postedBy: regUser._id,
     });
-    event.save();
+    post.save();
     setTimeout(function () {
       done();
     }, 500);
@@ -74,51 +73,48 @@ describe("Event Controller", () => {
 
   after((done) => {
     User.collection.drop();
-    Event.collection.drop();
+    Post.collection.drop();
     done();
   });
-
-  describe("Get event by eventId", () => {
-    it("should show 401 if user not logged in", (done) => {
+  describe("Get post by postId", () => {
+    it("should show 400 if post doesnt exist", (done) => {
       chai
         .request(app)
-        .get(`/api/event/${event._id}`)
-        .end((err, res) => {
-          expect(res).to.have.nested.property(
-            "text",
-            '{"error":"Unauthorized Access!"}'
-          );
-          expect(res).to.have.status(401);
-          done();
-        });
-    });
-    it("should show 400 if event doesnt exist", (done) => {
-      chai
-        .request(app)
-        .get(`/api/event/12`)
+        .get(`/api/post/12`)
         .set("Authorization", `Bearer ${regUserToken}`)
         .end((err, res) => {
           expect(res).to.have.status(400);
           done();
         });
     });
-    it("should show 200 w/ event info if user logged in", (done) => {
+    it("should show 200 w/ post info ", (done) => {
       chai
         .request(app)
-        .get(`/api/event/${event._id}`)
-        .set("Authorization", `Bearer ${regUserToken}`)
+        .get(`/api/post/${post._id}`)
         .end((err, res) => {
-          expect(res).to.have.nested.property("body.title", "new event");
+          expect(res).to.have.nested.property("body.title", "new post");
           expect(res).to.have.status(200);
           done();
         });
     });
   });
-  describe("Get events by userId", () => {
+  describe("Get posts", () => {
+    it("should show 200 w length of 1", (done) => {
+      chai
+        .request(app)
+        .get(`/api/posts`)
+        .end((err, res) => {
+          expect(res.body).to.have.lengthOf(1);
+          expect(res).to.have.status(200);
+          done();
+        });
+    });
+  });
+  describe("Get posts by userId", () => {
     it("should show 401 if user not logged in", (done) => {
       chai
         .request(app)
-        .get(`/api/events/by/${notLoginUser._id}`)
+        .get(`/api/posts/by/${notLoginUser._id}`)
         .end((err, res) => {
           expect(res).to.have.nested.property(
             "text",
@@ -131,7 +127,7 @@ describe("Event Controller", () => {
     it("should show 400 if user not found", (done) => {
       chai
         .request(app)
-        .get(`/api/events/by/123`)
+        .get(`/api/posts/by/123`)
         .end((err, res) => {
           expect(res).to.have.nested.property(
             "text",
@@ -144,7 +140,7 @@ describe("Event Controller", () => {
     it("should show 200 w/ empty array", (done) => {
       chai
         .request(app)
-        .get(`/api/events/by/${regUser2._id}`)
+        .get(`/api/posts/by/${regUser2._id}`)
         .set("Authorization", `Bearer ${regUser2Token}`)
         .end((err, res) => {
           expect(res.body).to.be.an("array").that.is.empty;
@@ -153,15 +149,16 @@ describe("Event Controller", () => {
         });
     });
     it("should show 200 w/ array length 2", (done) => {
-      event2 = new Event({
-        title: "new event",
+      post2 = new Post({
+        title: "new post2",
+        body: "At vim hinc civibus.",
         startDate: new Date(),
-        owner: regUser._id,
+        postedBy: regUser._id,
       });
-      event2.save();
+      post2.save();
       chai
         .request(app)
-        .get(`/api/events/by/${regUser._id}`)
+        .get(`/api/posts/by/${regUser._id}`)
         .set("Authorization", `Bearer ${regUserToken}`)
         .end((err, res) => {
           expect(res.body).to.have.lengthOf(2);
@@ -170,15 +167,14 @@ describe("Event Controller", () => {
         });
     });
   });
-  describe("Create new event", () => {
+  describe("Like post", () => {
     it("should show 401 if user not logged in", (done) => {
       chai
         .request(app)
-        .post(`/api/event/new/${notLoginUser._id}`)
+        .put(`/api/post/like`)
         .send({
-          title: "new event2",
-          startDate: new Date(),
-          owner: notLoginUser._id,
+          postId: post._id,
+          userId: regUser2._id,
         })
         .end((err, res) => {
           expect(res).to.have.nested.property(
@@ -189,31 +185,31 @@ describe("Event Controller", () => {
           done();
         });
     });
+    it("should show 200 w/ length of 1 if user logged in", (done) => {
+      chai
+        .request(app)
+        .put(`/api/post/like`)
+        .set("Authorization", `Bearer ${regUser2Token}`)
+        .send({
+          postId: post._id,
+          userId: regUser2._id,
+        })
+        .end((err, res) => {
+          expect(res.body.likes).to.have.lengthOf(1);
+          expect(res).to.have.status(200);
+          done();
+        });
+    });
+  });
 
-    it("should show 200 when created by auth user", (done) => {
-      chai
-        .request(app)
-        .post(`/api/event/new/${regUser._id}`)
-        .set("Authorization", `Bearer ${regUserToken}`)
-        .send({
-          title: "new event2",
-          startDate: new Date(),
-        })
-        .end((err, res) => {
-          expect(res).to.have.nested.property("body.title", "new event2");
-          expect(res).to.have.status(200);
-          done();
-        });
-    });
-  });
-  describe("Update event", () => {
+  describe("Unlike post", () => {
     it("should show 401 if user not logged in", (done) => {
       chai
         .request(app)
-        .put(`/api/event/${event._id}`)
+        .put(`/api/post/unlike`)
         .send({
-          title: "update event",
-          startDate: new Date(),
+          postId: post._id,
+          userId: regUser2._id,
         })
         .end((err, res) => {
           expect(res).to.have.nested.property(
@@ -224,66 +220,32 @@ describe("Event Controller", () => {
           done();
         });
     });
-    it("should show 403 if update by non admin/owner", (done) => {
+    it("should show 200 w/ length of 0 if user logged in", (done) => {
       chai
         .request(app)
-        .put(`/api/event/${event._id}`)
+        .put(`/api/post/unlike`)
         .set("Authorization", `Bearer ${regUser2Token}`)
         .send({
-          title: "update event",
-          startDate: new Date(),
+          postId: post._id,
+          userId: regUser2._id,
         })
         .end((err, res) => {
-          expect(res).to.have.nested.property(
-            "text",
-            '{"error":"User is not authorized to perform this action"}'
-          );
-          expect(res).to.have.status(403);
-          done();
-        });
-    });
-    it("should show 200 if updated by owner", (done) => {
-      chai
-        .request(app)
-        .put(`/api/event/${event._id}`)
-        .set("Authorization", `Bearer ${regUserToken}`)
-        .send({
-          title: "update event",
-          startDate: new Date(),
-        })
-        .end((err, res) => {
-          expect(res).to.have.nested.property("body.title", "update event");
-          expect(res).to.have.status(200);
-          done();
-        });
-    });
-    it("should show 200 if updated by admin", (done) => {
-      chai
-        .request(app)
-        .put(`/api/event/${event._id}`)
-        .set("Authorization", `Bearer ${adminToken}`)
-        .send({
-          title: "update event again",
-          startDate: new Date(),
-        })
-        .end((err, res) => {
-          expect(res).to.have.nested.property(
-            "body.title",
-            "update event again"
-          );
+          expect(res.body.likes).to.have.lengthOf(0);
           expect(res).to.have.status(200);
           done();
         });
     });
   });
-  describe("Delete event", () => {
+
+  describe("Comment post", () => {
     it("should show 401 if user not logged in", (done) => {
       chai
         .request(app)
-        .delete(`/api/event/${event._id}`)
+        .put(`/api/post/comment`)
         .send({
-          title: "update event",
-          startDate: new Date(),
+          postId: post._id,
+          userId: regUser2._id,
+          comment: { text: "awesome post" },
         })
         .end((err, res) => {
           expect(res).to.have.nested.property(
@@ -294,54 +256,92 @@ describe("Event Controller", () => {
           done();
         });
     });
-    it("should show 403 if delete by non admin/owner", (done) => {
+    it("should show 200 w/ length of 1 if user logged in", (done) => {
       chai
         .request(app)
-        .delete(`/api/event/${event._id}`)
+        .put(`/api/post/comment`)
         .set("Authorization", `Bearer ${regUser2Token}`)
+        .set("Accept", "application/json")
+        .send({
+          postId: post._id,
+          userId: regUser2._id,
+          comment: { text: "awesome post" },
+        })
         .end((err, res) => {
-          expect(res).to.have.nested.property(
-            "text",
-            '{"error":"User is not authorized to perform this action"}'
-          );
-          expect(res).to.have.status(403);
+          expect(res.body.comments).to.have.lengthOf(1);
+          expect(res).to.have.status(200);
+          comment = res.body.comments[0];
           done();
         });
     });
-    it("should show 200 w/ array length 2 if delete by owner", (done) => {
+    it("should show 400 if post not found", (done) => {
       chai
         .request(app)
-        .delete(`/api/event/${event._id}`)
-        .set("Authorization", `Bearer ${regUserToken}`)
+        .put(`/api/post/comment`)
+        .set("Authorization", `Bearer ${regUser2Token}`)
+        .set("Accept", "application/json")
+        .send({
+          postId: "19292929",
+          userId: regUser2._id,
+          comment: { text: "awesome post" },
+        })
         .end((err, res) => {
-          expect(res).to.have.status(200);
-          chai
-            .request(app)
-            .get(`/api/events/by/${regUser._id}`)
-            .set("Authorization", `Bearer ${regUserToken}`)
-            .end((err, res) => {
-              expect(res.body).to.have.lengthOf(2);
-              expect(res).to.have.status(200);
-              done();
-            });
+          expect(res).to.have.status(400);
+          done();
         });
     });
-    it("should show 200 w/ array length 1 if delete by admin", (done) => {
+  });
+
+  describe("Uncomment post", () => {
+    it("should show 401 if user not logged in", (done) => {
       chai
         .request(app)
-        .delete(`/api/event/${event2._id}`)
-        .set("Authorization", `Bearer ${adminToken}`)
+        .put(`/api/post/uncomment`)
+        .send({
+          postId: post._id,
+          userId: regUser2._id,
+          comment: comment,
+        })
         .end((err, res) => {
+          expect(res).to.have.nested.property(
+            "text",
+            '{"error":"Unauthorized Access!"}'
+          );
+          expect(res).to.have.status(401);
+          done();
+        });
+    });
+    it("should show 200 w/ length of 0 if user logged in", (done) => {
+      chai
+        .request(app)
+        .put(`/api/post/uncomment`)
+        .set("Authorization", `Bearer ${regUser2Token}`)
+        .set("Accept", "application/json")
+        .send({
+          postId: post._id,
+          userId: regUser2._id,
+          comment: comment,
+        })
+        .end((err, res) => {
+          expect(res.body.comments).to.have.lengthOf(0);
           expect(res).to.have.status(200);
-          chai
-            .request(app)
-            .get(`/api/events/by/${regUser._id}`)
-            .set("Authorization", `Bearer ${regUserToken}`)
-            .end((err, res) => {
-              expect(res.body).to.have.lengthOf(1);
-              expect(res).to.have.status(200);
-              done();
-            });
+          done();
+        });
+    });
+    it("should show 400 if post not found", (done) => {
+      chai
+        .request(app)
+        .put(`/api/post/uncomment`)
+        .set("Authorization", `Bearer ${regUser2Token}`)
+        .set("Accept", "application/json")
+        .send({
+          postId: "19292929",
+          userId: regUser2._id,
+          comment: comment,
+        })
+        .end((err, res) => {
+          expect(res).to.have.status(400);
+          done();
         });
     });
   });
