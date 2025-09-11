@@ -1,9 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import morgan from 'morgan';
-import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import expressValidator from 'express-validator';
 import fs from 'fs';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -25,11 +23,7 @@ const conString = process.argv.toString().includes('mocha')
   : process.env.MONGO_URI || "mongodb://localhost/bggapi";
 
 mongoose
-  .connect(conString, {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-    useFindAndModify: false,
-  } as mongoose.ConnectOptions)
+  .connect(conString)
   .then(() => console.log("DB Connected"))
   .catch((err) => console.error("DB connection error:", err));
 
@@ -68,10 +62,9 @@ app.get("/api", (req: Request, res: Response) => {
 **************************       Middleware       ************************
 **************************************************************************/
 app.use(morgan('dev'));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(cookieParser());
-app.use(expressValidator());
 app.use(cors());
 
 app.use('/api', postRoutes);
