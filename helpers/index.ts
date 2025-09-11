@@ -1,10 +1,16 @@
-const nodeMailer = require("nodemailer");
+import nodeMailer from "nodemailer";
+
+interface EmailData {
+  from?: string;
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+}
 
 const defaultEmailData = { from: "noreply@node-react.com" };
 
-// get app specific password for gmail guide
-// https://www.lifewire.com/get-a-password-to-access-gmail-by-pop-imap-2-1171882
-exports.sendEmail = (emailData) => {
+export const sendEmail = (emailData: EmailData): Promise<any> => {
   const transporter = nodeMailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
@@ -15,6 +21,7 @@ exports.sendEmail = (emailData) => {
       pass: "kbxdyxnidqskfplr",
     },
   });
+  
   return transporter
     .sendMail(emailData)
     .then((info) => console.log(`Message sent: ${info.response}`))

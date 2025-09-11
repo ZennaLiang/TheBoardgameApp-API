@@ -1,7 +1,7 @@
-const express = require("express");
+import express, { Router } from "express";
 
-const { requireSignIn, hasAuthorization } = require("../controllers/auth");
-const {
+import { requireSignIn, hasAuthorization } from "../controllers/auth";
+import {
   getEvent,
   findEventById,
   eventsByUser,
@@ -9,10 +9,11 @@ const {
   isOwner,
   updateEvent,
   deleteEvent,
-} = require("../controllers/event");
-const { findUserById } = require("../controllers/user");
+} from "../controllers/event";
+import { findUserById } from "../controllers/user";
 
-const router = express.Router();
+const router: Router = express.Router();
+
 router.get("/event/:eventId", requireSignIn, getEvent);
 router.get("/events/by/:userId", requireSignIn, eventsByUser);
 
@@ -24,4 +25,5 @@ router.delete("/event/:eventId", requireSignIn, isOwner, deleteEvent);
 router.param("userId", findUserById);
 // check if event exist when any route uses :eventId in para
 router.param("eventId", findEventById);
-module.exports = router;
+
+export default router;

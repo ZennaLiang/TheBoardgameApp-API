@@ -1,9 +1,8 @@
-const express = require("express");
-const router = express.Router();
+import express, { Router } from "express";
 
-const { findUserById } = require("../controllers/user");
-const { userSignupValidator, passwordResetValidator } = require("../validator");
-const { 
+import { findUserById } from "../controllers/user";
+import { userSignupValidator, passwordResetValidator } from "../validators";
+import { 
     signUp, 
     signIn, 
     signOut,
@@ -11,7 +10,9 @@ const {
     resetPassword,
     googleLogin,
     facebookLogin
-} = require("../controllers/auth");
+} from "../controllers/auth";
+
+const router: Router = express.Router();
 
 router.post("/signup", userSignupValidator, signUp);
 router.post("/signin", signIn);
@@ -26,6 +27,5 @@ router.post("/facebook-login", facebookLogin);
 
 // check if user exist when any route uses :userId in para
 router.param("userId", findUserById);
-  //
-module.exports = router;
- 
+
+export default router;

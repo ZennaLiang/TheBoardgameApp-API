@@ -1,17 +1,17 @@
-const express = require("express");
-const { requireSignIn } = require("../controllers/auth");
+import express, { Router } from "express";
+import { requireSignIn } from "../controllers/auth";
 
-const {
+import {
   getBggBoardgames,
   getUserBggBoardgames,
   getBoardgame,
   getBGGCounts,
   getUserCollection,
   updateUserCollection,
-} = require("../controllers/boardgame");
-const { findUserById } = require("../controllers/user");
+} from "../controllers/boardgame";
+import { findUserById } from "../controllers/user";
 
-const router = express.Router();
+const router: Router = express.Router();
 
 router.get("/boardgame/user/:bggUsername", requireSignIn, getUserBggBoardgames);
 router.get("/boardgame/:bggUsername", requireSignIn, getBggBoardgames);
@@ -28,4 +28,5 @@ router.post(
 );
 // any route containing :userId, our app will first execute userByID()
 router.param("userId", findUserById);
-module.exports = router;
+
+export default router;

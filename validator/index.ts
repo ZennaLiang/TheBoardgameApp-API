@@ -1,8 +1,9 @@
+import { Request, Response, NextFunction } from "express";
+
 // uses express validator middleware to validate 
 // https://express-validator.github.io/docs/
 
-
-exports.createPostValidator = (req, res, next) => {
+export const createPostValidator = (req: Request, res: Response, next: NextFunction): void | Response => {
   // title
   req.check("title", "Write a title").notEmpty();
   req.check("title", "Title must be between 4 to 150 characters").isLength({
@@ -19,14 +20,14 @@ exports.createPostValidator = (req, res, next) => {
   const errors = req.validationErrors();
   // if error show the first one as they happen
   if (errors) {
-    const firstError = errors.map(error => error.msg)[0];
+    const firstError = errors.map((error: any) => error.msg)[0];
     return res.status(400).json({ error: firstError });
   }
   // proceed to next middleware
   next();
 };
 
-exports.userSignupValidator = (req, res, next) => {
+export const userSignupValidator = (req: Request, res: Response, next: NextFunction): void | Response => {
   // name is not null and between 4-10 characters
   req.check("name", "Name is required").notEmpty();
   req.check("email", "Email is required").notEmpty();
@@ -66,14 +67,14 @@ exports.userSignupValidator = (req, res, next) => {
   const errors = req.validationErrors();
   // if error show the first one as they happen
   if (errors) {
-    const firstError = errors.map(error => error.msg)[0];
+    const firstError = errors.map((error: any) => error.msg)[0];
     return res.status(400).json({ error: firstError });
   }
   // proceed to next middleware
   next();
 };
 
-exports.passwordResetValidator = (req, res, next) => {
+export const passwordResetValidator = (req: Request, res: Response, next: NextFunction): void | Response => {
   // check for password
   req.check("newPassword", "Password is required").notEmpty();
   req
@@ -88,7 +89,7 @@ exports.passwordResetValidator = (req, res, next) => {
   const errors = req.validationErrors();
   // if error show the first one as they happen
   if (errors) {
-    const firstError = errors.map(error => error.msg)[0];
+    const firstError = errors.map((error: any) => error.msg)[0];
     return res.status(400).json({ error: firstError });
   }
   // proceed to next middleware or ...

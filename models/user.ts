@@ -1,11 +1,47 @@
-const mongoose = require("mongoose");
-const uuidv1 = require("uuid/v1"); //for random string and time stamp
-const crypto = require("crypto"); //for hash password
-const { ObjectId } = mongoose.Schema; // object with name and ids
+import mongoose, { Schema, Model } from 'mongoose';
+import { v1 as uuidv1 } from 'uuid';
+import crypto from 'crypto';
+import { IUser } from '../types';
 
-const Post = require("./post");
-const Boardgame = require("./boardgame");
-const userSchema = new mongoose.Schema(
+const { ObjectId } = Schema.Types;
+
+interface IBoardgameEntry {
+  boardgame: mongoose.Types.ObjectId;
+  notes?: string;
+  forTrade?: boolean;
+  wantFromTrade?: boolean;
+  wantFromBuy?: boolean;
+  wantToPlay?: boolean;
+  numOfPlay?: number;
+  price?: number;
+  condition?: 'Excellent' | 'Good' | 'Fair' | 'Poor';
+  tags?: string[];
+}
+
+interface IUnconfirmedFriend {
+  friend: mongoose.Types.ObjectId[];
+  sender: boolean;
+  confirmed: boolean;
+}
+
+interface IUserDocument extends IUser {
+  _password?: string;
+  friends?: mongoose.Types.ObjectId[];
+  unconfirmedFriends?: IUnconfirmedFriend[];
+  bggUsername?: string;
+  boardgames?: IBoardgameEntry[];
+  createdDate?: Date;
+}
+
+interface IUserMethods {
+  authenticate(plainText: string): boolean;
+  encryptPassword(password: string): string;
+  makeSalt(): string;
+}
+
+type UserModel = Model<IUserDocument, {}, IUserMethods>;
+
+const userSchema = new Schema<IUserDocument, UserModel, IUserMethods>(
   {
     name: {
       type: String,
@@ -85,22 +121,22 @@ const userSchema = new mongoose.Schema(
       }
     ]
   },
-  { toJson: { virtual: true } }
+  { toJSON: { virtuals: true } }
 );
 
 /**************************************************************************
  **************************************************************************
  * Virtual fields are additional fields for a given model.
  * Their values can be set manually or automatically with defined functionality.
- * Keep in mind: virtual properties (password) don’t get persisted in the database.
- * They only exist logically and are not written to the document’s collection.
+ * Keep in mind: virtual properties (password) don't get persisted in the database.
+ * They only exist logically and are not written to the document's collection.
  **************************************************************************
  **************************************************************************/
 
 // virtual field for temp password
 userSchema
   .virtual("password")
-  .set(function(password) {
+  .set(function(this: IUserDocument, password: string) {
     // create temporary variable called _password
     this._password = password;
     // generate a timestamp
@@ -108,7 +144,7 @@ userSchema
     // encrypt password
     this.hashed_password = this.encryptPassword(password);
   })
-  .get(function() {
+  .get(function(this: IUserDocument) {
     return this._password;
   });
 
@@ -119,26 +155,32 @@ userSchema
  **************************************************************************/
 
 userSchema.methods = {
-  authenticate: function(plainText) {
+  authenticate: function(this: IUserDocument, plainText: string): boolean {
     return this.encryptPassword(plainText) === this.hashed_password;
   },
   // encrypt the password and check if password match
-  encryptPassword: function(password) {
+  encryptPassword: function(this: IUserDocument, password: string): string {
     if (!password) return "";
     try {
       return crypto
-        .createHmac("sha1", this.salt)
+        .createHmac("sha1", this.salt!)
         .update(password)
         .digest("hex");
     } catch (err) {
       return "";
     }
+  },
+  makeSalt: function(): string {
+    return uuidv1();
   }
 };
 
-userSchema.pre("remove", function(next) {
-  Post.remove({ postedBy: this._id }).exec();
+userSchema.pre("remove", async function(this: IUserDocument, next) {
+  const Post = mongoose.model("Post");
+  await Post.deleteMany({ postedBy: this._id });
   next();
 });
 
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.model<IUserDocument, UserModel>("User", userSchema);
+
+export default User;

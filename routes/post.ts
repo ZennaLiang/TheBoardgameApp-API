@@ -1,6 +1,6 @@
-const express = require("express");
+import express, { Router } from "express";
 
-const {
+import {
   getPosts,
   createPost,
   postsByUser,
@@ -14,12 +14,12 @@ const {
   unlikePost,
   commentPost,
   uncommentPost,
-} = require("../controllers/post");
-const { requireSignIn } = require("../controllers/auth");
-const { createPostValidator } = require("../validator");
-const { findUserById } = require("../controllers/user");
+} from "../controllers/post";
+import { requireSignIn } from "../controllers/auth";
+import { createPostValidator } from "../validators";
+import { findUserById } from "../controllers/user";
 
-const router = express.Router();
+const router: Router = express.Router();
 
 router.get("/posts", getPosts);
 router.get("/post/:postId", getPost);
@@ -47,4 +47,5 @@ router.get("/post/photo/:postId", getPostPhoto);
 router.param("userId", findUserById);
 // check if post exist when any route uses :postId in para
 router.param("postId", findPostById);
-module.exports = router;
+
+export default router;
