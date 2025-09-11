@@ -1,7 +1,6 @@
-import mongoose, { Schema, Model } from 'mongoose';
-import { IPost, IComment } from '../types';
+import mongoose, { Schema, Model, Types } from 'mongoose';
+import { IPost } from '../types';
 
-const { ObjectId } = Schema.Types;
 
 interface IPostDocument extends IPost {
   createdDate?: Date;
@@ -23,7 +22,7 @@ const postSchema = new Schema<IPostDocument, PostModel>({
     contentType: String
   },
   postedBy: {
-    type: ObjectId,
+    type: Schema.Types.ObjectId as any,
     ref: "User"
   },
   createdDate: {
@@ -31,12 +30,12 @@ const postSchema = new Schema<IPostDocument, PostModel>({
     default: Date.now
   },
   updated: Date,
-  likes: [{ type: ObjectId, ref: "User" }],
+  likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
   comments: [
     {
       text: String,
       createdDate: { type: Date, default: Date.now },
-      postedBy: { type: ObjectId, ref: "User" }
+      postedBy: { type: Schema.Types.ObjectId, ref: "User" }
     }
   ]
 });

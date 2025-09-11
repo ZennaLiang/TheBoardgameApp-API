@@ -89,7 +89,7 @@ export const initSocket = (io: Server): void => {
         }
 
         const msgObject: ChatMessage = {
-          _id: chat._id.toString(),
+          _id: (chat as any)._id.toString(),
           message: data.message,
           timestamp: Date.now(),
           from: conn.user._id

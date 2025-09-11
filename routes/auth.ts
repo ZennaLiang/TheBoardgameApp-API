@@ -1,7 +1,7 @@
 import express, { Router } from "express";
 
 import { findUserById } from "../controllers/user";
-import { userSignupValidator, passwordResetValidator } from "../validators";
+import { userSignupValidator, passwordResetValidator } from "../validator";
 import { 
     signUp, 
     signIn, 
@@ -26,6 +26,6 @@ router.post("/google-login", googleLogin);
 router.post("/facebook-login", facebookLogin);
 
 // check if user exist when any route uses :userId in para
-router.param("userId", findUserById);
+router.param("userId", findUserById as any);
 
 export default router;

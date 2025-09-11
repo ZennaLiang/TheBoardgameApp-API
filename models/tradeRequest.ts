@@ -1,7 +1,6 @@
 import mongoose, { Schema, Model } from 'mongoose';
 import { ITradeRequest } from '../types';
 
-const { ObjectId } = Schema.Types;
 
 interface ITradeItem {
   id: string;
@@ -25,15 +24,15 @@ type TradeRequestModel = Model<ITradeRequestDocument>;
 const tradeRequestSchema = new Schema<ITradeRequestDocument, TradeRequestModel>({
   // Interface fields
   requester: {
-    type: ObjectId,
+    type: Schema.Types.ObjectId as any,
     ref: "User"
   },
   recipient: {
-    type: ObjectId,
+    type: Schema.Types.ObjectId as any,
     ref: "User"
   },
-  offeredGames: [{ type: ObjectId, ref: "Boardgame" }],
-  requestedGames: [{ type: ObjectId, ref: "Boardgame" }],
+  offeredGames: [{ type: Schema.Types.ObjectId as any, ref: "Boardgame" }],
+  requestedGames: [{ type: Schema.Types.ObjectId as any, ref: "Boardgame" }],
   message: {
     type: String
   },
@@ -50,11 +49,11 @@ const tradeRequestSchema = new Schema<ITradeRequestDocument, TradeRequestModel>(
 
   // Legacy fields from original JS model
   tradeSender: {
-    type: ObjectId,
+    type: Schema.Types.ObjectId as any,
     ref: "User"
   },
   tradeReceiver: {
-    type: ObjectId,
+    type: Schema.Types.ObjectId as any,
     ref: "User"
   },
   tradeOffer: [
@@ -104,18 +103,7 @@ const tradeRequestSchema = new Schema<ITradeRequestDocument, TradeRequestModel>(
   }
 });
 
-// Add virtuals to map between different field names
-tradeRequestSchema.virtual('requester').get(function(this: ITradeRequestDocument) {
-  return this.tradeSender;
-});
-
-tradeRequestSchema.virtual('recipient').get(function(this: ITradeRequestDocument) {
-  return this.tradeReceiver;
-});
-
-tradeRequestSchema.virtual('message').get(function(this: ITradeRequestDocument) {
-  return this.notes;
-});
+// Virtuals removed - they were conflicting with real schema fields
 
 const TradeRequest = mongoose.model<ITradeRequestDocument, TradeRequestModel>("Trades", tradeRequestSchema);
 

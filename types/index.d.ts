@@ -21,6 +21,19 @@ export interface IUser extends Document {
   resetPasswordLink?: string;
   token?: string;
   googleId?: string;
+  bggUsername?: string;
+  boardgames?: Array<{
+    boardgame: any;
+    notes?: string;
+    forTrade?: boolean;
+    wantFromTrade?: boolean;
+    wantFromBuy?: boolean;
+    wantToPlay?: boolean;
+    numOfPlay?: number;
+    price?: number;
+    condition?: string;
+    tags?: string[];
+  }>;
   authenticate: (plainText: string) => boolean;
   encryptPassword: (password: string) => string;
   makeSalt: () => string;

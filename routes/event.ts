@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 
-import { requireSignIn, hasAuthorization } from "../controllers/auth";
+import { requireSignIn } from "../controllers/auth";
 import {
   getEvent,
   findEventById,
@@ -22,8 +22,8 @@ router.put("/event/:eventId", requireSignIn, isOwner, updateEvent);
 router.delete("/event/:eventId", requireSignIn, isOwner, deleteEvent);
 
 // check if user exist when any route uses :userId in para
-router.param("userId", findUserById);
+router.param("userId", findUserById as any);
 // check if event exist when any route uses :eventId in para
-router.param("eventId", findEventById);
+router.param("eventId", findEventById as any);
 
 export default router;

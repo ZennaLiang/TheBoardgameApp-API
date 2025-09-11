@@ -36,6 +36,6 @@ router.get("/user/photo/:userId", getUserPhoto);
 router.get("/user/findpeople/:userId", requireSignIn, findPeople);
 
 // any route containing :userId, our app will first execute userByID()
-router.param("userId", findUserById);
+router.param("userId", findUserById as any);
 
 export default router;

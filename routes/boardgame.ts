@@ -27,6 +27,6 @@ router.post(
   updateUserCollection
 );
 // any route containing :userId, our app will first execute userByID()
-router.param("userId", findUserById);
+router.param("userId", findUserById as any);
 
 export default router;

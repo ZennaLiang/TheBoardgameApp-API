@@ -1,7 +1,6 @@
 import mongoose, { Schema, Model } from 'mongoose';
 import { IEvent } from '../types';
 
-const { ObjectId } = Schema.Types;
 
 interface IEventDocument extends IEvent {
   description?: string;
@@ -32,7 +31,7 @@ const eventSchema = new Schema<IEventDocument, EventModel>({
     contentType: String
   },
   postedBy: {
-    type: ObjectId,
+    type: Schema.Types.ObjectId as any,
     ref: "User",
     required: true,
   },
@@ -55,8 +54,8 @@ const eventSchema = new Schema<IEventDocument, EventModel>({
   allDay: {
     type: Boolean,
   },
-  invitees: [{ type: ObjectId, ref: "User" }],
-  attendees: [{ type: ObjectId, ref: "User" }],
+  invitees: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  attendees: [{ type: Schema.Types.ObjectId, ref: "User" }],
   maxAttendees: {
     type: Number,
   },
@@ -66,9 +65,9 @@ const eventSchema = new Schema<IEventDocument, EventModel>({
   privateEvent: {
     type: Boolean,
   },
-  boardgames: [{ type: ObjectId, ref: "Boardgame" }],
+  boardgames: [{ type: Schema.Types.ObjectId, ref: "Boardgame" }],
   owner: {
-    type: ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "User",
   },
   bgColor: {

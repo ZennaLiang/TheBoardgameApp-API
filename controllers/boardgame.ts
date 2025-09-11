@@ -432,7 +432,7 @@ export const updateUserCollection = async (req: UserCollectionParams, res: Respo
 			{ runValidators: true }
 		);
 
-		if (response.ok) {
+		if (response.acknowledged) {
 			return res.status(200).json({
 				success: true,
 				message: 'User collection updated successfully',

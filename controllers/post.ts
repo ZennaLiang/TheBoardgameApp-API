@@ -143,8 +143,9 @@ export const postsByUser = async (req: Request, res: Response): Promise<Response
 };
 
 export const createPost = (req: Request, res: Response): void => {
-  const form = new formidable.IncomingForm();
-  form.keepExtensions = true;
+  const form = formidable({
+    keepExtensions: true
+  });
   
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -168,19 +169,12 @@ export const createPost = (req: Request, res: Response): void => {
       req.profile.salt = undefined;
       post.postedBy = req.profile._id;
 
-      if (files.photo && Array.isArray(files.photo)) {
-        const photoFile = files.photo[0];
-        if (photoFile.filepath) {
+      if (files.photo) {
+        const photoFile = Array.isArray(files.photo) ? files.photo[0] : files.photo;
+        if (photoFile && 'filepath' in photoFile) {
           post.photo = {
             data: fs.readFileSync(photoFile.filepath),
             contentType: photoFile.mimetype || 'image/jpeg'
-          };
-        }
-      } else if (files.photo && typeof files.photo === 'object' && 'filepath' in files.photo) {
-        if (files.photo.filepath) {
-          post.photo = {
-            data: fs.readFileSync(files.photo.filepath),
-            contentType: files.photo.mimetype || 'image/jpeg'
           };
         }
       }
@@ -229,8 +223,9 @@ export const isPoster = (req: Request, res: Response, next: NextFunction): void 
 };
 
 export const updatePost = (req: Request, res: Response): void => {
-  const form = new formidable.IncomingForm();
-  form.keepExtensions = true;
+  const form = formidable({
+    keepExtensions: true
+  });
   
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -252,19 +247,12 @@ export const updatePost = (req: Request, res: Response): void => {
       post = _.extend(post, fields);
       post.updated = new Date();
 
-      if (files.photo && Array.isArray(files.photo)) {
-        const photoFile = files.photo[0];
-        if (photoFile.filepath) {
+      if (files.photo) {
+        const photoFile = Array.isArray(files.photo) ? files.photo[0] : files.photo;
+        if (photoFile && 'filepath' in photoFile) {
           post.photo = {
             data: fs.readFileSync(photoFile.filepath),
             contentType: photoFile.mimetype || 'image/jpeg'
-          };
-        }
-      } else if (files.photo && typeof files.photo === 'object' && 'filepath' in files.photo) {
-        if (files.photo.filepath) {
-          post.photo = {
-            data: fs.readFileSync(files.photo.filepath),
-            contentType: files.photo.mimetype || 'image/jpeg'
           };
         }
       }

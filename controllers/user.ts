@@ -219,8 +219,9 @@ export const getUser = (req: Request, res: Response): Response => {
 };
 
 export const updateUser = (req: Request, res: Response): void => {
-  const form = new formidable.IncomingForm();
-  form.keepExtensions = true;
+  const form = formidable({
+    keepExtensions: true
+  });
   
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -242,19 +243,12 @@ export const updateUser = (req: Request, res: Response): void => {
       user = _.extend(user, fields);
       user.updated = new Date();
 
-      if (files.photo && Array.isArray(files.photo)) {
-        const photoFile = files.photo[0];
-        if (photoFile.filepath) {
+      if (files.photo) {
+        const photoFile = Array.isArray(files.photo) ? files.photo[0] : files.photo;
+        if (photoFile && 'filepath' in photoFile) {
           user.photo = {
             data: fs.readFileSync(photoFile.filepath),
             contentType: photoFile.mimetype || 'image/jpeg'
-          };
-        }
-      } else if (files.photo && typeof files.photo === 'object' && 'filepath' in files.photo) {
-        if (files.photo.filepath) {
-          user.photo = {
-            data: fs.readFileSync(files.photo.filepath),
-            contentType: files.photo.mimetype || 'image/jpeg'
           };
         }
       }
@@ -434,7 +428,7 @@ export const updateBggUsername = async (req: BggUsernameParams, res: Response): 
                     bg.boardgame != undefined && 
                     bg.boardgame != null &&
                     bg.boardgame._id &&
-                    bg.boardgame._id.toString() === foundBoardgame._id.toString()
+                    bg.boardgame._id.toString() === (foundBoardgame as any)._id.toString()
                 );
 
                 if (findUserBoardgame) {

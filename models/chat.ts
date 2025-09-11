@@ -1,7 +1,6 @@
 import mongoose, { Schema, Model } from 'mongoose';
 import { IChat, IMessage } from '../types';
 
-const { ObjectId } = Schema.Types;
 
 interface IMessageDocument extends IMessage {
   from?: mongoose.Types.ObjectId;
@@ -19,7 +18,7 @@ type ChatModel = Model<IChatDocument>;
 const messageSchema = new Schema<IMessageDocument, MessageModel>({
   // Interface fields
   sender: {
-    type: ObjectId,
+    type: Schema.Types.ObjectId as any,
     ref: "User"
   },
   text: {
@@ -37,7 +36,7 @@ const messageSchema = new Schema<IMessageDocument, MessageModel>({
 
   // Legacy fields from original JS model
   from: {
-    type: ObjectId,
+    type: Schema.Types.ObjectId as any,
     ref: "User"
   },
   message: {
@@ -50,25 +49,14 @@ const messageSchema = new Schema<IMessageDocument, MessageModel>({
   }
 });
 
-// Add virtuals to map between different field names
-messageSchema.virtual('sender').get(function(this: IMessageDocument) {
-  return this.from;
-});
-
-messageSchema.virtual('text').get(function(this: IMessageDocument) {
-  return this.message;
-});
-
-messageSchema.virtual('created').get(function(this: IMessageDocument) {
-  return this.timestamp;
-});
+// Virtuals removed - they were conflicting with real schema fields
 
 const chatSchema = new Schema<IChatDocument, ChatModel>(
   {
     // Interface fields
     participants: [
       {
-        type: ObjectId,
+        type: Schema.Types.ObjectId as any,
         ref: "User"
       }
     ],
@@ -85,7 +73,7 @@ const chatSchema = new Schema<IChatDocument, ChatModel>(
     // Legacy fields from original JS model
     between: [
       {
-        type: ObjectId,
+        type: Schema.Types.ObjectId as any,
         ref: "User"
       }
     ]
@@ -93,10 +81,7 @@ const chatSchema = new Schema<IChatDocument, ChatModel>(
   { toJSON: { virtuals: true } }
 );
 
-// Add virtuals to map between different field names
-chatSchema.virtual('participants').get(function(this: IChatDocument) {
-  return this.between;
-});
+// Virtuals removed - they were conflicting with real schema fields
 
 // Update lastMessage when messages are added
 chatSchema.pre('save', function(this: IChatDocument, next) {

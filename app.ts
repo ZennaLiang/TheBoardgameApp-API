@@ -45,7 +45,7 @@ import chatRoutes from './routes/chat';
 /**************************************************************************
  **************************         API DOC         ************************
  **************************************************************************/
-app.get("/api", (req: Request, res: Response) => {
+app.get("/api", (_req: Request, res: Response) => {
   fs.readFile(path.join(__dirname, "../docs/apiDocs.json"), (err, data) => {
     if (err) {
       res.status(400).json({
@@ -80,7 +80,7 @@ interface UnauthorizedError extends Error {
   status?: number;
 }
 
-app.use(function (err: UnauthorizedError, req: Request, res: Response, next: NextFunction) {
+app.use(function (err: UnauthorizedError, _req: Request, res: Response, next: NextFunction) {
   if (err.name === "UnauthorizedError") {
     res.status(401).json({ error: "Unauthorized Access!" });
   } else {

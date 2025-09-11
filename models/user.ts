@@ -3,7 +3,6 @@ import { v1 as uuidv1 } from 'uuid';
 import crypto from 'crypto';
 import { IUser } from '../types';
 
-const { ObjectId } = Schema.Types;
 
 interface IBoardgameEntry {
   boardgame: mongoose.Types.ObjectId;
@@ -72,18 +71,18 @@ const userSchema = new Schema<IUserDocument, UserModel, IUserMethods>(
       type: String,
       trim: true
     },
-    following: [{ type: ObjectId, ref: "User" }],
-    followers: [{ type: ObjectId, ref: "User" }],
-    friends: [{ type: ObjectId, ref: "User" }],
+    following: [{ type: Schema.Types.ObjectId as any, ref: "User" }],
+    followers: [{ type: Schema.Types.ObjectId as any, ref: "User" }],
+    friends: [{ type: Schema.Types.ObjectId as any, ref: "User" }],
     unconfirmedFriends: [
       {
-        friend: [{ type: ObjectId, ref: "User" }],
+        friend: [{ type: Schema.Types.ObjectId as any, ref: "User" }],
         sender: Boolean,
         confirmed: Boolean
       }
     ],
     resetPasswordLink: {
-      data: String,
+      type: String,
       default: ""
     },
     role: {
@@ -96,7 +95,7 @@ const userSchema = new Schema<IUserDocument, UserModel, IUserMethods>(
     boardgames: [
       {
         boardgame: {
-          type: ObjectId,
+          type: Schema.Types.ObjectId as any,
           ref: "Boardgame",
           unique: true,
           sparse: true
@@ -175,10 +174,9 @@ userSchema.methods = {
   }
 };
 
-userSchema.pre("remove", async function(this: IUserDocument, next) {
+userSchema.pre("deleteOne", { document: true, query: false }, async function(this: IUserDocument) {
   const Post = mongoose.model("Post");
   await Post.deleteMany({ postedBy: this._id });
-  next();
 });
 
 const User = mongoose.model<IUserDocument, UserModel>("User", userSchema);

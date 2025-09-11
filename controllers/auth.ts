@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import expressJwt from "express-jwt";
+import { expressjwt } from "express-jwt";
 import _ from "lodash";
 import { OAuth2Client } from "google-auth-library";
 import { Request, Response, NextFunction } from "express";
@@ -279,10 +279,10 @@ export const signOut = (req: Request, res: Response): Response => {
   } as ApiResponse);
 };
 
-export const requireSignIn = expressJwt({
+export const requireSignIn = expressjwt({
   secret: process.env.JWT_SECRET || "",
   algorithms: ["HS256"],
-  userProperty: "auth"
+  requestProperty: "auth"
 });
 
 export const forgotPassword = async (req: ForgotPasswordRequest, res: Response): Promise<Response> => {

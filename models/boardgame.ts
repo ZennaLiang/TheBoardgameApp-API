@@ -95,18 +95,7 @@ const boardgameSchema = new Schema<IBoardgameDocument, BoardgameModel>({
   },
 });
 
-// Add virtual fields to map between different naming conventions
-boardgameSchema.virtual('playingTime').get(function(this: IBoardgameDocument) {
-  return this.maxPlayTime;
-});
-
-boardgameSchema.virtual('thumbnail').get(function(this: IBoardgameDocument) {
-  return this.imgThumbnail;
-});
-
-boardgameSchema.virtual('rating').get(function(this: IBoardgameDocument) {
-  return this.avgRating ? parseFloat(this.avgRating) : undefined;
-});
+// Virtual fields removed - they were conflicting with real schema fields
 
 const Boardgame = mongoose.model<IBoardgameDocument, BoardgameModel>("Boardgame", boardgameSchema);
 
