@@ -4,12 +4,27 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import fs from 'fs';
 import cors from 'cors';
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
+import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import path from 'path';
 
 dotenv.config();
+
+/**************************************************************************
+ ********************       Env Var Validation       **********************
+ **************************************************************************/
+
+const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'] as const;
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    console.error(`FATAL: Required environment variable ${envVar} is not set.`);
+    process.exit(1);
+  }
+}
 
 const app: Application = express();
 const server = http.createServer(app);
@@ -18,9 +33,9 @@ const server = http.createServer(app);
  **************************       DB Connection    ************************
  **************************************************************************/
 
-const conString = process.argv.toString().includes('mocha') 
-  ? "mongodb://localhost/bggapi" 
-  : process.env.MONGO_URI || "mongodb://localhost/bggapi";
+const conString = process.argv.toString().includes('mocha')
+  ? "mongodb://localhost/bggapi"
+  : process.env.MONGO_URI!;
 
 mongoose
   .connect(conString)
@@ -61,11 +76,26 @@ app.get("/api", (_req: Request, res: Response) => {
 /**************************************************************************
 **************************       Middleware       ************************
 **************************************************************************/
+app.use(helmet());
+app.use(mongoSanitize());
 app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true
+}));
+
+// Global rate limiter
+const globalLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 min
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many requests, please try again later.' }
+});
+app.use(globalLimiter);
 
 app.use('/api', postRoutes);
 app.use('/api', authRoutes);
@@ -88,9 +118,10 @@ app.use(function (err: UnauthorizedError, _req: Request, res: Response, next: Ne
   }
 });
 
+const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "*",
+    origin: clientUrl,
     methods: ["GET", "POST"]
   }
 });

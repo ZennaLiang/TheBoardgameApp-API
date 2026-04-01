@@ -1,12 +1,14 @@
 import _ from "lodash";
 import formidable from "formidable";
 import fs from "fs";
-import axios, { AxiosResponse } from "axios";
 import XML2JS from "xml2js";
 import { Request, Response, NextFunction } from "express";
 import User from "../models/user";
 import Boardgame from "../models/boardgame";
 import { IUser, IBoardgame, ApiResponse } from "../types";
+
+const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const MAX_PHOTO_SIZE = 2 * 1024 * 1024; // 2MB
 
 interface UserByNameParams extends Request {
   params: {
@@ -96,6 +98,19 @@ interface BggCollectionResponse {
     item: BggBoardgameItem[];
   };
 }
+
+const BGG_FETCH_TIMEOUT = 15000; // 15 seconds
+
+const fetchCollection = async (url: string): Promise<{ status: number; data: string } | undefined> => {
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(BGG_FETCH_TIMEOUT) });
+    const data = await response.text();
+    return { status: response.status, data };
+  } catch (error) {
+    console.error("Error fetching collection:", error);
+    return undefined;
+  }
+};
 
 export const findUserByName = async (req: UserByNameParams, res: Response): Promise<Response> => {
   try {
@@ -220,14 +235,15 @@ export const getUser = (req: Request, res: Response): Response => {
 
 export const updateUser = (req: Request, res: Response): void => {
   const form = formidable({
-    keepExtensions: true
+    keepExtensions: true,
+    maxFileSize: MAX_PHOTO_SIZE
   });
-  
+
   form.parse(req, async (err, fields, files) => {
     if (err) {
       return res.status(400).json({
         success: false,
-        error: "Photo could not be uploaded"
+        error: "Photo could not be uploaded. Max file size is 2MB."
       } as ApiResponse);
     }
 
@@ -246,6 +262,12 @@ export const updateUser = (req: Request, res: Response): void => {
       if (files.photo) {
         const photoFile = Array.isArray(files.photo) ? files.photo[0] : files.photo;
         if (photoFile && 'filepath' in photoFile) {
+          if (!ALLOWED_PHOTO_TYPES.includes(photoFile.mimetype || '')) {
+            return res.status(400).json({
+              success: false,
+              error: "Invalid file type. Allowed types: JPEG, PNG, GIF, WebP."
+            } as ApiResponse);
+          }
           user.photo = {
             data: fs.readFileSync(photoFile.filepath),
             contentType: photoFile.mimetype || 'image/jpeg'
@@ -271,20 +293,10 @@ export const updateUser = (req: Request, res: Response): void => {
   });
 };
 
-const fetchCollection = async (url: string): Promise<AxiosResponse | undefined> => {
-  try {
-    const response = await axios.get(url);
-    return response;
-  } catch (error) {
-    console.error("Error fetching collection:", error);
-    return undefined;
-  }
-};
-
 const processBggBoardgame = (bgItem: BggBoardgameItem): ProcessedBggBoardgame => {
   const bgStats = bgItem.status[0].$;
   const boardgameInfo = bgItem.stats[0].$;
-  
+
   const bg: ProcessedBggBoardgame = {
     bggId: bgItem.$.objectid,
     title: bgItem.name[0]._ === undefined ? "Missing Name" : bgItem.name[0]._,
@@ -364,7 +376,7 @@ export const updateBggUsername = async (req: BggUsernameParams, res: Response): 
     user.updated = new Date();
     user.bggUsername = req.params.bggUsername;
 
-    const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
+    const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${encodeURIComponent(req.params.bggUsername)}&subtype=boardgame&stats=1`;
 
     if (req.body.counter === undefined) {
       req.body.counter = 0;
@@ -425,7 +437,7 @@ export const updateBggUsername = async (req: BggUsernameParams, res: Response): 
               if (foundBoardgame && user.boardgames) {
                 const findUserBoardgame = user.boardgames.find(
                   (bg: any) =>
-                    bg.boardgame != undefined && 
+                    bg.boardgame != undefined &&
                     bg.boardgame != null &&
                     bg.boardgame._id &&
                     bg.boardgame._id.toString() === (foundBoardgame as any)._id.toString()

@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import axios, { AxiosResponse } from 'axios';
 import XML2JS from 'xml2js';
 import { Request, Response, NextFunction } from 'express';
 import Boardgame from '../models/boardgame';
@@ -59,6 +58,8 @@ interface BggCollectionResponse {
 	};
 }
 
+const BGG_FETCH_TIMEOUT = 15000; // 15 seconds
+
 export const findBgByUsername = (_req: Request, _res: Response, next: NextFunction, _id: string): void => {
 	next();
 };
@@ -67,10 +68,11 @@ export const getBoardgame = (req: Request, res: Response): Response => {
 	return res.json(req.boardgame);
 };
 
-const fetchCollection = async (url: string): Promise<AxiosResponse | undefined> => {
+const fetchCollection = async (url: string): Promise<{ status: number; data: string } | undefined> => {
 	try {
-		const response = await axios.get(url);
-		return response;
+		const response = await fetch(url, { signal: AbortSignal.timeout(BGG_FETCH_TIMEOUT) });
+		const data = await response.text();
+		return { status: response.status, data };
 	} catch (error) {
 		console.error('Error fetching collection:', error);
 		return undefined;
@@ -105,7 +107,7 @@ const processBggBoardgame = (bgItem: BggBoardgameItem): ProcessedBoardgame => {
 
 export const getBggBoardgames = async (req: BggBoardgameParams, res: Response): Promise<Response> => {
 	try {
-		const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
+		const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${encodeURIComponent(req.params.bggUsername)}&subtype=boardgame&stats=1`;
 
 		if (req.body.counter === undefined) {
 			req.body.counter = 0;
@@ -207,7 +209,7 @@ export const getUserCollection = (req: Request, res: Response): Response => {
 
 export const getUserBggBoardgames = async (req: BggBoardgameParams, res: Response): Promise<Response> => {
 	try {
-		const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
+		const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${encodeURIComponent(req.params.bggUsername)}&subtype=boardgame&stats=1`;
 
 		if (req.body.counter === undefined) {
 			req.body.counter = 0;
@@ -259,7 +261,7 @@ export const getUserBggBoardgames = async (req: BggBoardgameParams, res: Respons
 					const savePromises = boardgames.map(async (bgItem) => {
 						try {
 							await Boardgame.findOneAndUpdate(
-								{ bggId: bgItem.bggId }, // Note: Fixed the field name inconsistency
+								{ bggId: bgItem.bggId },
 								bgItem,
 								{ upsert: true }
 							);
@@ -277,12 +279,9 @@ export const getUserBggBoardgames = async (req: BggBoardgameParams, res: Respons
 				data: boardgames,
 			} as ApiResponse<ProcessedBoardgame[]>);
 		} else if (response.status === 202) {
-			setTimeout(() => {
-				getUserBggBoardgames(req, res);
-			}, 5000);
 			return res.status(202).json({
 				success: false,
-				message: 'BGG is processing request, please wait...',
+				message: 'BGG is processing request, please retry in a few seconds.',
 			} as ApiResponse);
 		}
 
@@ -300,7 +299,7 @@ export const getUserBggBoardgames = async (req: BggBoardgameParams, res: Respons
 
 export const getBGGCounts = async (req: BggBoardgameParams, res: Response): Promise<Response> => {
 	try {
-		const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&own=0&stats=1`;
+		const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${encodeURIComponent(req.params.bggUsername)}&subtype=boardgame&own=0&stats=1`;
 
 		const response = await fetchCollection(url);
 
@@ -355,7 +354,7 @@ export const getBGGCounts = async (req: BggBoardgameParams, res: Response): Prom
 
 export const checkBggAccountExist = async (req: BggBoardgameParams, res: Response, next: NextFunction): Promise<void> => {
 	try {
-		const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${req.params.bggUsername}&subtype=boardgame&stats=1`;
+		const url = `https://www.boardgamegeek.com/xmlapi2/collection?username=${encodeURIComponent(req.params.bggUsername)}&subtype=boardgame&stats=1`;
 
 		const response = await fetchCollection(url);
 

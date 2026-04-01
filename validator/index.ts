@@ -22,7 +22,10 @@ export const userSignupValidator = [
     .normalizeEmail(),
   body('password')
     .notEmpty().withMessage('Password is required')
-    .isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+    .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
+    .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
+    .matches(/\d/).withMessage('Password must contain at least one number'),
   handleValidationErrors,
 ];
 
@@ -52,7 +55,10 @@ export const createPostValidator = [
 export const passwordResetValidator = [
   body('newPassword')
     .notEmpty().withMessage('New password is required')
-    .isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+    .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
+    .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
+    .matches(/\d/).withMessage('Password must contain at least one number'),
   body('resetPasswordLink')
     .notEmpty().withMessage('Reset token is required'),
   handleValidationErrors,

@@ -256,9 +256,14 @@ export const createMessage = async (req: CreateMessageRequest, res: Response): P
   }
 };
 
+const escapeRegex = (str: string): string => {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 export const searchUser = async (req: SearchUserRequest, res: Response): Promise<Response> => {
   try {
-    const regex = new RegExp(`^${req.body.name.toLowerCase()}`);
+    const sanitized = escapeRegex(req.body.name.toLowerCase());
+    const regex = new RegExp(`^${sanitized}`);
     const users = await User.find({ name: regex }).limit(5).exec() as IUser[];
     
     return res.json({

@@ -34,9 +34,8 @@ export interface IUser extends Document {
     condition?: string;
     tags?: string[];
   }>;
-  authenticate: (plainText: string) => boolean;
-  encryptPassword: (password: string) => string;
-  makeSalt: () => string;
+  authenticate: (plainText: string) => Promise<boolean>;
+  encryptPassword: (password: string) => Promise<string>;
 }
 
 export interface IPost extends Document {

@@ -1,7 +1,8 @@
 import mongoose, { Schema, Model } from 'mongoose';
-import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 import { IUser } from '../types';
 
+const SALT_ROUNDS = 12;
 
 interface IBoardgameEntry {
   boardgame: mongoose.Types.ObjectId;
@@ -32,9 +33,8 @@ interface IUserDocument extends IUser {
 }
 
 interface IUserMethods {
-  authenticate(plainText: string): boolean;
-  encryptPassword(password: string): string;
-  makeSalt(): string;
+  authenticate: (plainText: string) => Promise<boolean>;
+  encryptPassword: (password: string) => Promise<string>;
 }
 
 type UserModel = Model<IUserDocument, {}, IUserMethods>;
@@ -135,16 +135,17 @@ const userSchema = new Schema<IUserDocument, UserModel, IUserMethods>(
 userSchema
   .virtual("password")
   .set(function(this: IUserDocument, password: string) {
-    // create temporary variable called _password
     this._password = password;
-    // generate a timestamp
-    this.salt = crypto.randomUUID();
-    // encrypt password
-    this.hashed_password = this.encryptPassword(password);
   })
   .get(function(this: IUserDocument) {
     return this._password;
   });
+
+// Hash password before saving
+userSchema.pre("save", async function() {
+  if (!this._password) return;
+  this.hashed_password = await bcrypt.hash(this._password, SALT_ROUNDS);
+});
 
 /**************************************************************************
  **************************************************************************
@@ -152,26 +153,14 @@ userSchema
  **************************************************************************
  **************************************************************************/
 
-userSchema.methods = {
-  authenticate: function(this: IUserDocument, plainText: string): boolean {
-    return this.encryptPassword(plainText) === this.hashed_password;
-  },
-  // encrypt the password and check if password match
-  encryptPassword: function(this: IUserDocument, password: string): string {
-    if (!password) return "";
-    try {
-      return crypto
-        .createHmac("sha1", this.salt!)
-        .update(password)
-        .digest("hex");
-    } catch (err) {
-      return "";
-    }
-  },
-  makeSalt: function(): string {
-    return crypto.randomUUID();
-  }
-};
+userSchema.method('authenticate', async function(this: IUserDocument, plainText: string): Promise<boolean> {
+  if (!this.hashed_password) return false;
+  return bcrypt.compare(plainText, this.hashed_password);
+});
+
+userSchema.method('encryptPassword', async function(_password: string): Promise<string> {
+  return bcrypt.hash(_password, SALT_ROUNDS);
+});
 
 userSchema.pre("deleteOne", { document: true, query: false }, async function(this: IUserDocument) {
   const Post = mongoose.model("Post");
