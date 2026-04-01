@@ -1,12 +1,10 @@
-import formidable from 'formidable';
-import fs from 'fs';
 import _ from 'lodash';
 import axios, { AxiosResponse } from 'axios';
 import XML2JS from 'xml2js';
 import { Request, Response, NextFunction } from 'express';
-import User from '../models/user';
 import Boardgame from '../models/boardgame';
-import { IBoardgame, IUser, ApiResponse } from '../types';
+import User from '../models/user';
+import { ApiResponse } from '../types';
 
 interface BggBoardgameParams extends Request {
 	params: {
@@ -61,15 +59,7 @@ interface BggCollectionResponse {
 	};
 }
 
-export const findBgByUsername = (req: Request, res: Response, next: NextFunction, id: string): void => {
-	fetch(`https://www.boardgamegeek.com/xmlapi2/collection?username=ZennaL&subtype=boardgame&own=0`)
-		.then((response) => response.text())
-		.then((data) => {
-			// Process data if needed
-		})
-		.catch((error) => {
-			console.error('Error fetching BGG data:', error);
-		});
+export const findBgByUsername = (_req: Request, _res: Response, next: NextFunction, _id: string): void => {
 	next();
 };
 
@@ -181,12 +171,9 @@ export const getBggBoardgames = async (req: BggBoardgameParams, res: Response): 
 				data: boardgames,
 			} as ApiResponse<ProcessedBoardgame[]>);
 		} else if (response.status === 202) {
-			setTimeout(() => {
-				getBggBoardgames(req, res);
-			}, 5000);
 			return res.status(202).json({
 				success: false,
-				message: 'BGG is processing request, please wait...',
+				message: 'BGG is still processing your collection. Please retry in a few seconds.',
 			} as ApiResponse);
 		}
 

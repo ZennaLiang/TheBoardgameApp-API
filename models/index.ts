@@ -15,12 +15,3 @@ export {
   Message
 };
 
-export default {
-  User,
-  Post,
-  Event,
-  Boardgame,
-  TradeRequest,
-  Chat,
-  Message
-};

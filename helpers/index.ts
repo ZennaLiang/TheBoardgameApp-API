@@ -1,4 +1,7 @@
 import nodeMailer from "nodemailer";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 interface EmailData {
   from?: string;
@@ -17,8 +20,8 @@ export const sendEmail = (emailData: EmailData): Promise<any> => {
     secure: false,
     requireTLS: true,
     auth: {
-      user: "its.theboardgameguru@gmail.com",
-      pass: "kbxdyxnidqskfplr",
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   });
   

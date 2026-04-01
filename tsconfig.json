@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "commonjs",
+    "module": "Node16",
     "lib": ["ES2022"],
     "outDir": "./dist",
     "rootDir": "./",
@@ -25,7 +25,7 @@
     "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "baseUrl": "./",
     "paths": {
       "@/*": ["./*"],

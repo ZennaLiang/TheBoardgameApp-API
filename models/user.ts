@@ -1,5 +1,4 @@
 import mongoose, { Schema, Model } from 'mongoose';
-import { v1 as uuidv1 } from 'uuid';
 import crypto from 'crypto';
 import { IUser } from '../types';
 
@@ -139,7 +138,7 @@ userSchema
     // create temporary variable called _password
     this._password = password;
     // generate a timestamp
-    this.salt = uuidv1();
+    this.salt = crypto.randomUUID();
     // encrypt password
     this.hashed_password = this.encryptPassword(password);
   })
@@ -170,7 +169,7 @@ userSchema.methods = {
     }
   },
   makeSalt: function(): string {
-    return uuidv1();
+    return crypto.randomUUID();
   }
 };
 

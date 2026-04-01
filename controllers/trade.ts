@@ -47,11 +47,11 @@ export const createTrade = async (req: CreateTradeRequest, res: Response): Promi
       updated: new Date()
     };
 
-    const trade = await Trade.create(tradeData);
+    const trade = await Trade.create(tradeData as any);
 
     return res.status(200).json({
       success: true,
-      data: { tradeId: trade._id },
+      data: { tradeId: trade._id?.toString() },
       message: "Trade request created successfully"
     } as ApiResponse<{ tradeId: string }>);
   } catch (error) {

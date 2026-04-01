@@ -129,11 +129,12 @@ export const signIn = async (req: SignInRequest, res: Response): Promise<Respons
     
     const token = jwt.sign(
       { _id: user._id, role: user.role },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
     );
 
-    // Set cookie to expire in ~9999ms (about 10 seconds)
-    res.cookie("t", token, { expires: new Date(Date.now() + 9999) });
+    const cookieExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    res.cookie("t", token, { expires: cookieExpiry, httpOnly: true, secure: process.env.NODE_ENV === "production" });
 
     const { _id, name, email: userEmail, role } = user;
     return res.json({
@@ -202,11 +203,13 @@ export const googleLogin = async (req: GoogleLoginRequest, res: Response): Promi
       
       const token = jwt.sign(
         { _id: user._id, role: user.role, iss: process.env.APP_NAME },
-        process.env.JWT_SECRET
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
       );
-      
-      res.cookie("t", token, { expires: new Date(Date.now() + 9999) });
-      
+
+      const cookieExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      res.cookie("t", token, { expires: cookieExpiry, httpOnly: true, secure: process.env.NODE_ENV === "production" });
+
       const { _id, name: userName, email: userEmail, role } = user;
       return res.json({
         success: true,
@@ -252,11 +255,13 @@ export const facebookLogin = async (req: FacebookLoginRequest, res: Response): P
     
     const token = jwt.sign(
       { _id: user._id, role: user.role, iss: process.env.APP_NAME },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
     );
-    
-    res.cookie("t", token, { expires: new Date(Date.now() + 9999) });
-    
+
+    const cookieExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    res.cookie("t", token, { expires: cookieExpiry, httpOnly: true, secure: process.env.NODE_ENV === "production" });
+
     const { _id, name, email } = user;
     return res.json({
       success: true,
@@ -321,7 +326,8 @@ export const forgotPassword = async (req: ForgotPasswordRequest, res: Response):
     
     const token = jwt.sign(
       { _id: user._id, iss: "NODEAPI" },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
     );
     
     const emailData = {

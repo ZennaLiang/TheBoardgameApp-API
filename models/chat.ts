@@ -84,12 +84,11 @@ const chatSchema = new Schema<IChatDocument, ChatModel>(
 // Virtuals removed - they were conflicting with real schema fields
 
 // Update lastMessage when messages are added
-chatSchema.pre('save', function(this: IChatDocument, next) {
+chatSchema.pre('save', async function(this: IChatDocument) {
   if (this.messages && this.messages.length > 0) {
     const lastMsg = this.messages[this.messages.length - 1];
     this.lastMessage = lastMsg.created || new Date();
   }
-  next();
 });
 
 const Chat = mongoose.model<IChatDocument, ChatModel>("Chat", chatSchema);
